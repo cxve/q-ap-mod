@@ -108,4 +108,8 @@ internal class GeneralPatches
     {
         __instance.character = (ChampionType)Client.Instance.slotData.champ;
     }
+
+    [HarmonyPatch(typeof(CutsceneOneInLobbyManager), nameof(CutsceneOneInLobbyManager.StartCutscene))]
+    [HarmonyPostfix]
+    public static void AddAct2Skip(CutsceneOneInLobbyManager __instance) => __instance.hackerPostit.SetActive(true);
 }
