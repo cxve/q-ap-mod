@@ -331,8 +331,7 @@ internal class Client
             foreach (var result in task.Result)
             {
                 // cache check rewards for later
-                string name;
-                if (checkQ.TryGetValue(result.Key, out name))
+                if (checkQ.TryGetValue(result.Key, out string name))
                     checkRewards[name] = result.Value;
             }
             checkQ.Clear();
