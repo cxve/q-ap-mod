@@ -35,14 +35,17 @@ internal class CheckPatches
     {
         long xp = __instance.xp;
         int level_old = Simpleton<DataManager>.i.GetXPLevel(xp);
-        if (level_old < 50 && isLocal)
+        if (isLocal)
         {
-            xp += earnedXP;
-            int level_new = Simpleton<DataManager>.i.GetXPLevel(xp);
-            for (int level = level_old + 1; level <= level_new; ++level)
+            if (level_old < 50)
             {
-                var level_name = $"Level {level}";
-                Client.Instance.QueueCheck(level_name);
+                xp += earnedXP;
+                int level_new = Simpleton<DataManager>.i.GetXPLevel(xp);
+                for (int level = level_old + 1; level <= level_new; ++level)
+                {
+                    var level_name = $"Level {level}";
+                    Client.Instance.QueueCheck(level_name);
+                }
             }
             Client.Instance.QueueSend();
         }
