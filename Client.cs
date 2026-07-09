@@ -316,12 +316,14 @@ internal class Client
             data.locations.Add(id);
             SaveData = data;
             checkQ[id] = check;
+            Logger.LogInfo($"Successfully added \"{check}\" to the queue.");
         }
     }
 
     internal void QueueSend()
     {
         session.Locations.CompleteLocationChecks(checkQ.Keys.ToArray());
+        Logger.LogInfo("Queue was submitted!");
         var task = session.Locations.ScoutLocationsAsync(checkQ.Keys.ToArray());
         IEnumerator Wait()
         {
@@ -356,7 +358,11 @@ internal class Client
         }
     }
 
-    internal void SendGoal() => session.SetGoalAchieved();
+    internal void SendGoal()
+    {
+        session.SetGoalAchieved();
+        Logger.LogInfo("Goal was sent!");
+    }
 
     internal void ResetSaveCache() => __save = null;
 
