@@ -1,5 +1,6 @@
 ﻿using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.Models;
 using BepInEx.Logging;
 using cxve.qap.Patches;
@@ -92,7 +93,7 @@ internal class Client
         session.Socket.ErrorReceived += Socket_ErrorReceived; // this is necessary because the socket closed event does not fire when the socket was not gracefully closed
         session.Socket.SocketClosed += Socket_SocketClosed;
         Application.quitting += Application_quitting;
-        var result = session.TryConnectAndLogin("Q-UP", slot.slot, ItemsHandlingFlags.AllItems, tags: ["NoText"], password: slot.pass != "" ? slot.pass : null);
+        var result = session.TryConnectAndLogin("Q-UP", slot.slot, ItemsHandlingFlags.AllItems, password: slot.pass != "" ? slot.pass : null);
         if (!result.Successful)
         {
             Logger.LogWarning("Connection failed!");
@@ -118,6 +119,57 @@ internal class Client
                 sanityNumChallenges = Convert.ToInt32(slotData["sanityNumChallenges"]),
                 sanityNumChallengesTier4 = Convert.ToInt32(slotData["sanityNumChallengesTier4"])
             };
+
+            ConsoleCommandsRepository instance = ConsoleCommandsRepository.Instance;
+            string SessionRelay(string cmd, string[] args, bool skipCommand = false)
+            {
+                session.Say($"{(skipCommand ? "" : $"{cmd} ")}{string.Join(' ', args)}");
+                return "";
+            }
+            void RegisterCommand(string cmd, string desc, string syntax = "", bool skipCommand = false) => instance.RegisterCommand(cmd, (args) => SessionRelay(cmd, args, skipCommand), desc, syntax == "" ? cmd : syntax);
+            
+            string Help(string[] args)
+            {
+                string result = "To send a message or command to the Archipelago server, use <color=yellow>/say <message>.</color>\n" +
+                    "For example: <color=yellow>/say !hint ITEM_SHOP</color>\n" +
+                    "The following commands can be used directly, without using <color=yellow>/say</color>:\n";
+                foreach (var command in instance.GetCommands().Where(x => x.name.StartsWith("!")))
+                    result += $"{command.name} ";
+                return result;
+            }
+
+            RegisterCommand("!help", "Returns the help listing");
+            RegisterCommand("!license", "Returns the license information");
+            RegisterCommand("!options", "List all current options. Warning: lists password.");
+            RegisterCommand("!admin", "Allow remote administration of the multiworld server, for further help, use !help", "!admin [command]");
+            RegisterCommand("!players", "Get information about connected and missing players.");
+            RegisterCommand("!status", "Get status information abour your team. Optionally mention a Tag name and get information on who has that Tag. For example: DeathLink or EnergyLink", "!status [tag]");
+            RegisterCommand("!release", "Sends remaining items in your world to their recipients.");
+            RegisterCommand("!collect", "Send your remaining items to yourself");
+            RegisterCommand("!countdown", "Start a countdown in seconds", "!countdown seconds=10");
+            RegisterCommand("!remaining", "List remaining items in your game, but not their location or recipient");
+            RegisterCommand("!missing", "List all missing location checks from the server's perspective. Can be given text, which will be used as filter.", "!missing [filter_text]");
+            RegisterCommand("!checked", "List all done location checks from the server's perspective. Can be given text, which will be used as filter.", "!checked [filter_text]");
+            RegisterCommand("!alias", "Set your alias to the passed name.", "!alias [alias_name]");
+            RegisterCommand("!getitem", "Cheat in an item, if it is enabled on this server", "!getitem item_name");
+            RegisterCommand("!hint", "Use !hint {item_name}, for example !hint ITEM_SHOP to get a spoiler peek for that item. If hint costs are on, this will only give you one new result, you can rerun the command to get more in that case.", "!hint [item_name]");
+            RegisterCommand("!hint_location", "Use !hint_location {location_name}, for example \"!hint_location Tier 4 Challenge 1\" to get a spoiler peek for that location.", "!hint_location [location]");
+            RegisterCommand("/say", "Use this to send any text to the archipelago server, including commands!", "/say <content>", true);
+            instance.RegisterCommand("/help", Help, "Explains how to send messages and commands to the Archipelago server.");
+
+            void MessageReceived(LogMessage message)
+            {
+                string output = "";
+                foreach (var part in message.Parts)
+                {
+                    var color = part.Color;
+                    output += $"<color=#{color.R.ToString("X").PadLeft(2, '0')}{color.G.ToString("X").PadLeft(2, '0')}{color.B.ToString("X").PadLeft(2, '0')}>{part.Text}</color>";
+                }
+                ConsoleLog.Instance.Log(output);
+            }
+
+            session.MessageLog.OnMessageReceived += MessageReceived;
+
             // this returns true, if the save file has not been created yet
             // in that case, no need to precheck challenge locations
             if (connected_slot.file != "")
