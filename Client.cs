@@ -259,7 +259,15 @@ internal class Client
         FeatureWidgetEntry[] componentsInChildren = Simpleton<ShopManager>.i.unlockableFeaturesParent.GetComponentsInChildren<FeatureWidgetEntry>();
         List<long> ids = [];
         foreach (var location in componentsInChildren.Select(c => c.feature.constName))
-            ids.Add(session.Locations.GetLocationIdFromName("Q-UP", location));
+        {
+            var id = session.Locations.GetLocationIdFromName("Q-UP", location);
+            if (ids.Contains(id))
+            {
+                Logger.LogWarning($"Tried to add duplicate location \"{location}\", does this cause any issues?");
+                continue;
+            }
+            ids.Add(id);
+        }
         session.Locations.ScoutLocationsAsync(HintCreationPolicy.CreateAndAnnounceOnce, [.. ids]);
     }
 
