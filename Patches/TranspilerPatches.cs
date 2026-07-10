@@ -19,8 +19,6 @@ internal class TranspilerPatches
         return codes.AsEnumerable();
     }
 
-
-
     [HarmonyPatch(typeof(SkillManager), "OnDeleteUpgrade")]
     [HarmonyTranspiler]
     static IEnumerable<CodeInstruction> SkipMapInitOnDelete(IEnumerable<CodeInstruction> instructions)
