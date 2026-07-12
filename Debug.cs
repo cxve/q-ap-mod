@@ -21,25 +21,31 @@ static internal class Debug
 
     static internal void DumpMatchData() => File.WriteAllText("DEBUG_PROGRESSDATA_MATCH_DATA.JSON", JsonConvert.SerializeObject(Simpleton<MatchManager>.i.matchContext.localPlayer.ProgressData.data));
 
-    static internal void DumpSkillData()
+    static readonly string[] hypernodes = ["Jackpot", "Resurrection", "Queen", "Hoard", "A-List", "Hypercapitalist", "39_CATCH_FIRE", "Ψ"];
+
+    static internal string DumpSkillData()
     {
-        List<List<SerializableSkillNode>> characters = new();
+        List<List<Dictionary<string, object>>> characters = new();
         foreach (var _map in Simpleton<SkillManager>.i.skillMapPrefabs)
         {
-            List<SerializableSkillNode> nodes = new();
+            List<Dictionary<string, object>> nodes = new();
             var map = _map.GetComponent<SkillMap>();
-            foreach (var node in map.nodes)
+            foreach (var node in map.nodes.Where(x => !x.name.StartsWith("[Upgrade] ") && !hypernodes.Contains(x.name)))
             {
-                nodes.Add(new SerializableSkillNode()
+                nodes.Add(new()
                 {
-                    name = new Regex("^\\d{1,2}_").Replace(node.name, ""),
-                    originalChar = node.map.character,
-                    guid = node.GUID,
+                    { "name", new Regex("^\\d{1,2}_").Replace(node.name, "") },
+                    { "originalChar", node.map.character },
+                    { "guid", node.GUID },
+                    { "desc", node.GetDescription() },
+                    { "autoBuyLevel", node.autoBuyLevel },
+                    { "isInventory", node.isInventory }
                 });
             }
             characters.Add(nodes);
         }
         File.WriteAllText("DEBUG_SERIALIZED_CHAMP_NODES.JSON", JsonConvert.SerializeObject(characters));
+        return "Data dump complete!";
     }
 
     static internal void DumpRankSO()
@@ -81,5 +87,11 @@ static internal class Debug
     {
         var fullpath = Path.Join(Application.persistentDataPath, path);
         if (Directory.Exists(fullpath)) Directory.Delete(fullpath, true);
+    }
+
+    static internal void RegisterCommands()
+    {
+        var instance = ConsoleCommandsRepository.Instance;
+        instance.RegisterCommand("dump_skill_data", _ => DumpSkillData(), "Dump skill data to file...");
     }
 }

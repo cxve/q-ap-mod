@@ -51,6 +51,7 @@ public class Plugin : BaseUnityPlugin
         while (Singleton<SceneLoadManager>.i.isLoading || SceneManager.GetActiveScene().name != "main" || !Simpleton<DiscordManager>.i.isInitialized) yield return new WaitForSecondsRealtime(1);
         Client.CreateClient();
         UI.CreateUI();
+        if (isDebug) Debug.RegisterCommands();
     }
 
     internal static void StartWaitForInit() => Singleton<SceneLoadManager>.i.StartCoroutine(WaitForInit());

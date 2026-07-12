@@ -434,6 +434,6 @@ internal class UI
             case GUI_STATE.CONNECTED: GUI_Connected(); break;
         }
 
-        if (Plugin.isDebug) DebugUI();
+        //if (Plugin.isDebug) DebugUI();
     }
 }
