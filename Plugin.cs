@@ -40,6 +40,7 @@ public class Plugin : BaseUnityPlugin
 
         Harmony harmony = new(MyPluginInfo.PLUGIN_GUID);
         harmony.PatchAll(Assembly.GetExecutingAssembly());
+        Logger.LogInfo("Game patched!");
 
         StartWaitForInit();
     }
@@ -48,8 +49,11 @@ public class Plugin : BaseUnityPlugin
     // before creating the client and UI
     static IEnumerator WaitForInit()
     {
-        while (Singleton<SceneLoadManager>.i.isLoading || SceneManager.GetActiveScene().name != "main" || !Simpleton<DiscordManager>.i.isInitialized) yield return new WaitForSecondsRealtime(1);
+        Logger.LogInfo("Waiting for game to initialize...");
+        while (Singleton<SceneLoadManager>.i.isLoading || SceneManager.GetActiveScene().name != "main" || !Simpleton<ChallengeManager>.i.isInitialized) yield return new WaitForSecondsRealtime(1);
+        Logger.LogInfo("Creating Client...");
         Client.CreateClient();
+        Logger.LogInfo("Creating UI...");
         UI.CreateUI();
         if (isDebug) Debug.RegisterCommands();
     }

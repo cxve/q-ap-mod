@@ -153,6 +153,7 @@ internal class UI
         guiButtonBelow.active = new();
         guiButtonBelow.normal.background = guiBackgroundButtonBelow;
         guiButtonBelow.fixedHeight = 4;
+        Plugin.Logger.LogInfo("UI should be initialized!");
     }
 
     GUIStyle guiDebug;
