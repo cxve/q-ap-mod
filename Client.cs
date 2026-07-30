@@ -273,6 +273,9 @@ internal class Client
 
     internal void PrepareRun()
     {
+        SaveManager.globalData.noviceGambler = SaveManager.globalData.noviceMedic = SaveManager.globalData.novicePro = SaveManager.globalData.noviceRobot =
+            SaveManager.globalData.noviceStreamer = SaveManager.globalData.noviceTroll = SaveManager.globalData.noviceWhale = SaveManager.globalData.noviceWizard = false;
+
         Simpleton<ScreenManager>.i.InitializeAfterSaveSelected();
 
         // prevent unlocks
