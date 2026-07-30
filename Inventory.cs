@@ -168,7 +168,7 @@ internal class Inventory
         for (int i = 0; i < efficiency; ++i)
         {
             if (crystals * efficiency + i < 36) amount += Convert.ToInt32(Client.Instance.rankBackup[crystals * efficiency + i].crystalEarned);
-            else amount += UnityEngine.Mathf.RoundToInt(UnityEngine.Random.value * 50 + 50);
+            else amount += UnityEngine.Mathf.RoundToInt(UnityEngine.Random.value * 75 + 75);
         }
         Simpleton<StatsManager>.i.UpdateStatsAdd("TOTAL_CRYSTAL_EARNED", amount);
         Simpleton<PlayerManager>.i.progressData.EarnCrystal(amount, true);
@@ -182,7 +182,7 @@ internal class Inventory
         for (int i = 0; i < efficiency; ++i)
         {
             if (shards * efficiency + i < 20) amount += Convert.ToInt32(Client.Instance.rankBackup[35 + shards * efficiency + i].crystalEarned);
-            else amount += UnityEngine.Mathf.RoundToInt(UnityEngine.Random.value * 10);
+            else amount += UnityEngine.Mathf.RoundToInt(UnityEngine.Random.value * 10 + 5);
         }
         Simpleton<StatsManager>.i.UpdateStatsAdd("TOTAL_CORRUPTION_SHARDS_EARNED", amount);
         Simpleton<PlayerManager>.i.progressData.EarnCorruptionShard(amount, isLocal: true);
