@@ -412,7 +412,7 @@ internal class UI
             GUILayout.EndArea();
         }
 
-        text = $"Q-AP - Mod v{MyPluginInfo.PLUGIN_VERSION} / World v{Client.Instance.slotData.version}";
+        text = $"Q-AP     Mod v{MyPluginInfo.PLUGIN_VERSION}     World v{Client.Instance.slotData.version}";
         size = guiTooltip.CalcSize(new(text));
         GUILayout.BeginArea(new Rect(Screen.width - size.x - 40, Screen.height - size.y - 24, size.x + 30, size.y + 12), guiTooltip);
         GUILayout.FlexibleSpace();
