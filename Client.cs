@@ -40,6 +40,7 @@ internal class Client
         internal int itemPoolEfficiencyCorruptionShards;
         internal int sanityNumChallenges;
         internal int sanityNumChallengesTier4;
+        internal string version;
     }
     internal SlotData slotData;
     float lastSFX = 0;
@@ -96,16 +97,37 @@ internal class Client
         var result = session.TryConnectAndLogin("Q-UP", slot.slot, ItemsHandlingFlags.AllItems, password: slot.pass != "" ? slot.pass : null);
         if (!result.Successful)
         {
-            Logger.LogWarning("Connection failed!");
+            Logger.LogError("Connection failed!");
             session.Socket.DisconnectAsync();
             session = null;
             foreach (var error in (result as LoginFailure).Errors)
-                Logger.LogWarning(error);
+            {
+                Logger.LogError(error);
+                UI.Instance.SetError(UI.GUI_ERROR.UNKNOWN, error);
+            }
             return false;
         }
         else
         {
             Logger.LogInfo("Connection established!");
+            var slotData = (result as LoginSuccessful).SlotData;
+            var versionWorld = slotData["version"].ToString();
+            int majorMod = int.Parse(MyPluginInfo.PLUGIN_VERSION.Split('.')[0]),
+                majorWorld = int.Parse(versionWorld.Split('.')[0]);
+
+            if (majorMod != majorWorld)
+            {
+                Logger.LogFatal($"The mod you are using is not compatible with this world!\n\n" +
+                    $"Your mod version: v{MyPluginInfo.PLUGIN_VERSION}\n" +
+                    $"World Version: v{versionWorld}\n\n" +
+                    $"The first number of both versions must match!\n" +
+                    $"Either {(majorMod < majorWorld ? "upgrade" : "downgrade")} your mod from v{majorMod}.x.x to v{majorWorld}.x.x " +
+                    $"or {(majorWorld < majorMod ? "upgrade" : "downgrade")} the world from v{majorWorld}.x.x to v{majorMod}.x.x");
+                session.Socket.DisconnectAsync();
+                session = null;
+                UI.Instance.SetError(UI.GUI_ERROR.INCOMPATIBLE, versionWorld);
+                return false;
+            }
             connected_slot = slot;
             var slotData = (result as LoginSuccessful).SlotData;
             this.slotData = new SlotData()
@@ -117,7 +139,8 @@ internal class Client
                 itemPoolEfficiencyCorruptionShards = 1, // this setting was removed because it was kinda useless, corruption shards are now filler
 
                 sanityNumChallenges = Convert.ToInt32(slotData["sanityNumChallenges"]),
-                sanityNumChallengesTier4 = Convert.ToInt32(slotData["sanityNumChallengesTier4"])
+                sanityNumChallengesTier4 = Convert.ToInt32(slotData["sanityNumChallengesTier4"]),
+                version = versionWorld
             };
 
             ConsoleCommandsRepository instance = ConsoleCommandsRepository.Instance;

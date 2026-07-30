@@ -174,6 +174,9 @@ internal class UI
 
     enum GUI_STATE { INIT, START_RUN, CONTINUE_RUN, CONTINUE_RUN_CONNECT, CONNECTED }
     GUI_STATE gui_state = GUI_STATE.INIT;
+    internal enum GUI_ERROR { NONE, UNKNOWN, INCOMPATIBLE }
+    GUI_ERROR gui_error = GUI_ERROR.NONE;
+    string gui_error_message = "";
     int delete = -1;
     int page = 0;
     int entriesPerPage = 5;
@@ -419,6 +422,36 @@ internal class UI
         GUILayout.EndArea();
     }
 
+    void GUI_Error()
+    {
+        string text = "";
+        switch (gui_error)
+        {
+            case GUI_ERROR.INCOMPATIBLE:
+                int majorMod = int.Parse(MyPluginInfo.PLUGIN_VERSION.Split('.')[0]),
+                    majorWorld = int.Parse(gui_error_message.Split('.')[0]);
+                text = $"Your mod version (v{MyPluginInfo.PLUGIN_VERSION}) is not compatible with this world (v{gui_error_message})!\n" +
+                    $"Either {(majorMod < majorWorld ? "upgrade" : "downgrade")} your mod from v{majorMod}.x.x to v{majorWorld}.x.x " +
+                    $"or {(majorWorld < majorMod ? "upgrade" : "downgrade")} the world from v{majorWorld}.x.x to v{majorMod}.x.x"; break;
+            case GUI_ERROR.UNKNOWN: text = gui_error_message; break;
+        }
+        var size = guiTooltip.CalcSize(new(text));
+        GUILayout.BeginArea(new Rect(Screen.width - size.x - 40, Screen.height - size.y - 24, size.x + 30, size.y + 12), guiTooltip);
+        GUILayout.FlexibleSpace();
+        GUI.color = Color.red;
+        GUILayout.Label(text, guiTooltipText);
+        GUI.color = Color.white;
+        GUILayout.Space(2);
+        GUILayout.FlexibleSpace();
+        GUILayout.EndArea();
+    }
+
+    internal void SetError(GUI_ERROR err, string message = "")
+    {
+        gui_error = err;
+        gui_error_message = message;
+    }
+
     internal void OnGUI()
     {
         // wait for dependencies to init
@@ -434,6 +467,9 @@ internal class UI
             case GUI_STATE.CONTINUE_RUN_CONNECT: GUI_Continue_Connect(); break;
             case GUI_STATE.CONNECTED: GUI_Connected(); break;
         }
+
+        if (gui_state == GUI_STATE.INIT || gui_state == GUI_STATE.CONNECTED) gui_error = GUI_ERROR.NONE;
+        if (gui_error != GUI_ERROR.NONE) GUI_Error();
 
         //if (Plugin.isDebug) DebugUI();
     }
