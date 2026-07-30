@@ -40,9 +40,11 @@ internal class HintPatches
 
     [HarmonyPatch(typeof(RankUpAnim), nameof(RankUpAnim.Init))]
     [HarmonyPostfix]
-    public static void DisplayUnlockInRankUpAnim(RankUpAnim __instance, string newRankName)
+    public static void DisplayUnlockInRankUpAnim(RankUpAnim __instance, string newRankName, RankData.Rank newRank)
     {
-        if (!Client.Instance.checkRewards.TryGetValue(newRankName, out var item)) return;
-        __instance.crystalAmt.text = $"<size=-2>You found {Client.Instance.FormatPossessiveName(item.Player.Name)} <b>{item.ItemName}</b>!";
+        if (Client.Instance.slotData.goal == newRank.id) 
+            __instance.crystalAmt.text = $"<size=-2>You reached your <b>Goal</b>!";
+        else if (Client.Instance.checkRewards.TryGetValue(newRankName, out var item)) 
+            __instance.crystalAmt.text = $"<size=-2>You found {Client.Instance.FormatPossessiveName(item.Player.Name)} <b>{item.ItemName}</b>!";
     }
 }

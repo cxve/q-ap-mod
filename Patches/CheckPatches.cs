@@ -23,8 +23,8 @@ internal class CheckPatches
             for (int rank = rank_old + 1; rank <= rank_new; ++rank)
             {
                 var rank_name = Simpleton<DataManager>.i.GetRankById(rank).name;
-                Client.Instance.QueueCheck(rank_name);
-                if (rank == 55) Client.Instance.SendGoal();
+                if (rank == Client.Instance.slotData.goal) Client.Instance.SendGoal();
+                else Client.Instance.QueueCheck(rank_name);
             }
         }
     }

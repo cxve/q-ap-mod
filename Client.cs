@@ -35,6 +35,7 @@ internal class Client
     internal struct SlotData
     {
         internal int champ;
+        internal int goal;
         internal int itemPoolEfficiencyUpgradePoints;
         internal int itemPoolEfficiencyCrystals;
         internal int itemPoolEfficiencyCorruptionShards;
@@ -129,10 +130,10 @@ internal class Client
                 return false;
             }
             connected_slot = slot;
-            var slotData = (result as LoginSuccessful).SlotData;
             this.slotData = new SlotData()
             {
                 champ = Convert.ToInt32(slotData["champ"]),
+                goal = Convert.ToInt32(slotData["goal"]),
 
                 itemPoolEfficiencyUpgradePoints = Convert.ToInt32(slotData["itemPoolEfficiencyUpgradePoints"]),
                 itemPoolEfficiencyCrystals = Convert.ToInt32(slotData["itemPoolEfficiencyCrystals"]),
