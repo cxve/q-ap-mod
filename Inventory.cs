@@ -108,7 +108,15 @@ internal class Inventory
         Logger.LogInfo("Node found!");
         // this fixes hypernode unlocks recalling skills at 0, 0, 0
         // i should at some point write a better solution that will choose any unoccupied slot
-        if (Data.hypernodes.Contains(node.name)) node.gridPosition = Data.orderToPos[168];
+        if (Data.hypernodes.Contains(node.name))
+        {
+            node.gridPosition = Data.orderToPos[168];
+            if (Simpleton<SkillManager>.i.activeMap.nodes.Any(x => x.name == node.name))
+            {
+                Logger.LogWarning("This hypernode already exists in the active map, will not add another!");
+                return;
+            }
+        }
         var map = new SaveManager.SerializableSkillMap() { character = node.originalChar, nodes = [node] };
         // determine if there is already a fixed node at the position
         var activeNode = Simpleton<SkillManager>.i.activeMap.GetNodeAtGridPosition(node.gridPosition);
