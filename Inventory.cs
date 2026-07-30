@@ -85,13 +85,30 @@ internal class Inventory
         else if (item.ItemName == "Corruption Shards") { if (isNew) GiveCorruptionShards(title, inventory[item.ItemId]); }
         else if (item.ItemName == "Gold") { if (isNew) GiveGold(title, inventory[item.ItemId]); }
         else if (item.ItemName == "Upgrade Point") GiveUpgrade(title, isNew);
-        else if (isNew) GiveSkill(title, item);
+        else
+        {
+            switch (item.ItemName)
+            {
+                case "Jackpot": SaveManager.globalData.noviceGambler = true; break;
+                case "Resurrection": SaveManager.globalData.noviceMedic = true; break;
+                case "Queen": SaveManager.globalData.novicePro = true; break;
+                case "Hoard": SaveManager.globalData.noviceTroll = true; break;
+                case "A-List": SaveManager.globalData.noviceStreamer = true; break;
+                case "Hypercapitalist": SaveManager.globalData.noviceWhale = true; break;
+                case "39_CATCH_FIRE": SaveManager.globalData.noviceRobot = true; break;
+                case "Ψ": SaveManager.globalData.noviceWizard = true; break;
+            }
+            if (isNew) GiveSkill(title, item);
+        }
     }
 
     void GiveSkill(string title, ItemInfo item)
     {
         if (!Data.GetNodeByName(item.ItemName, out var node)) return;
         Logger.LogInfo("Node found!");
+        // this fixes hypernode unlocks recalling skills at 0, 0, 0
+        // i should at some point write a better solution that will choose any unoccupied slot
+        if (Data.hypernodes.Contains(node.name)) node.gridPosition = Data.orderToPos[168];
         var map = new SaveManager.SerializableSkillMap() { character = node.originalChar, nodes = [node] };
         // determine if there is already a fixed node at the position
         var activeNode = Simpleton<SkillManager>.i.activeMap.GetNodeAtGridPosition(node.gridPosition);
@@ -124,7 +141,8 @@ internal class Inventory
         Logger.LogInfo("Skillmap created!");
         Simpleton<HackerManager>.i.InitializeHackerNodeFromSerialized(Simpleton<SkillManager>.i.activeMap, map, node);
         Logger.LogInfo("Hacker Node initialized!");
-        Client.Instance.SendNotification(title, $"Skill: <b>{item.ItemName}</b>", "levelup");
+        if (Data.hypernodes.Contains(node.name)) Client.Instance.SendNotification(title, $"The hypernode \"<b>{item.ItemName}</b>\" can now appear in the item shop...", "levelup");
+        else Client.Instance.SendNotification(title, $"Skill: <b>{item.ItemName}</b>", "levelup");
     }
 
     void GiveFeature(string title, FeatureData.Feature feat)

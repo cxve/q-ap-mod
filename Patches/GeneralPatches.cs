@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using System.Linq;
 using TastyTools;
 using UnityEngine;
 
@@ -89,11 +90,11 @@ internal class GeneralPatches
             Plugin.Logger.LogInfo($"Upgrade Point Level Filler: {__instance.upgradePointLevelsFiller.Count}");
             if (__instance.upgradePointLevelsFiller.Count > 0)
             {
-                foreach (var node in __instance.nodes) if (node != null) Object.DestroyImmediate(node.gameObject);
+                foreach (var node in __instance.nodes) if (node != null && !Data.hypernodes.Contains(node.name)) Object.DestroyImmediate(node.gameObject);
                 foreach (var node in __instance.connections)
                     if (node != null && node.gameObject != null)
                         Object.DestroyImmediate(node.gameObject);
-                __instance.nodes = [];
+                __instance.nodes = [.. __instance.nodes.Where(x => x != null && Data.hypernodes.Contains(x.name))];
                 __instance.connections = [];
             }
             __instance.upgradePointLevelsFiller = [];
