@@ -111,6 +111,7 @@ internal class Inventory
         if (Data.hypernodes.Contains(node.name))
         {
             node.gridPosition = Data.orderToPos[168];
+            Client.Instance.SendNotification(title, $"The hypernode \"<b>{item.ItemName}</b>\" can now appear in the item shop...", "levelup");
             if (Simpleton<SkillManager>.i.activeMap.nodes.Any(x => x.name == node.name))
             {
                 Logger.LogWarning("This hypernode already exists in the active map, will not add another!");
@@ -149,8 +150,7 @@ internal class Inventory
         Logger.LogInfo("Skillmap created!");
         Simpleton<HackerManager>.i.InitializeHackerNodeFromSerialized(Simpleton<SkillManager>.i.activeMap, map, node);
         Logger.LogInfo("Hacker Node initialized!");
-        if (Data.hypernodes.Contains(node.name)) Client.Instance.SendNotification(title, $"The hypernode \"<b>{item.ItemName}</b>\" can now appear in the item shop...", "levelup");
-        else Client.Instance.SendNotification(title, $"Skill: <b>{item.ItemName}</b>", "levelup");
+        if (!Data.hypernodes.Contains(node.name)) Client.Instance.SendNotification(title, $"Skill: <b>{item.ItemName}</b>", "levelup");
     }
 
     void GiveFeature(string title, FeatureData.Feature feat)
