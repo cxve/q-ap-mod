@@ -29,6 +29,8 @@ internal class Data
         { "PROGRESSIVE_SHOP_REROLL", ["SHOP_REROLL", "EXTREMELY_COOL_SHOPS_SOMETIMES"] }
     };
 
+    internal static readonly string[] hypernodes = ["Jackpot", "Resurrection", "Queen", "Hoard", "A-List", "Hypercapitalist", "39_CATCH_FIRE", "Ψ"];
+
     // i don't know how to calculate hex positions
     // but this is probably better in terms of performance anyway
     internal static Vector3Int[] orderToPos = [
