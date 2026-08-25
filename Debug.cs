@@ -21,16 +21,14 @@ static internal class Debug
 
     static internal void DumpMatchData() => File.WriteAllText("DEBUG_PROGRESSDATA_MATCH_DATA.JSON", JsonConvert.SerializeObject(Simpleton<MatchManager>.i.matchContext.localPlayer.ProgressData.data));
 
-    static readonly string[] hypernodes = ["Jackpot", "Resurrection", "Queen", "Hoard", "A-List", "Hypercapitalist", "39_CATCH_FIRE", "Ψ"];
-
     static internal string DumpSkillData()
     {
-        List<List<Dictionary<string, object>>> characters = new();
+        List<List<Dictionary<string, object>>> characters = [];
         foreach (var _map in Simpleton<SkillManager>.i.skillMapPrefabs)
         {
-            List<Dictionary<string, object>> nodes = new();
+            List<Dictionary<string, object>> nodes = [];
             var map = _map.GetComponent<SkillMap>();
-            foreach (var node in map.nodes.Where(x => !x.name.StartsWith("[Upgrade] ") && !hypernodes.Contains(x.name)))
+            foreach (var node in map.nodes.Where(x => !x.name.StartsWith("[Upgrade] ") && !Data.hypernodes.Contains(x.name)))
             {
                 nodes.Add(new()
                 {
