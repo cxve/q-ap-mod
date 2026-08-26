@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>cxve.qap</AssemblyName>
     <Product>Q-AP</Product>
-    <Version>2.0.0</Version>
+    <Version>3.0.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <RestoreAdditionalProjectSources>
@@ -13,7 +13,6 @@
       https://nuget.samboy.dev/v3/index.json
     </RestoreAdditionalProjectSources>
     <RootNamespace>cxve.qap</RootNamespace>
-    <BaseOutputPath>E:\Games\Steam\steamapps\common\Q-UP\BepInEx\plugins</BaseOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,29 +30,30 @@
   
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>E:\Games\Steam\steamapps\common\Q-UP\Q-UP_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>lib/Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="DOTween">
-      <HintPath>E:\Games\Steam\steamapps\common\Q-UP\Q-UP_Data\Managed\DOTween.dll</HintPath>
+      <HintPath>lib/DOTween.dll</HintPath>
     </Reference>
     <Reference Include="DOTweenPro">
-      <HintPath>E:\Games\Steam\steamapps\common\Q-UP\Q-UP_Data\Managed\DOTweenPro.dll</HintPath>
+      <HintPath>lib/DOTweenPro.dll</HintPath>
     </Reference>
     <Reference Include="Unity.TextMeshPro">
-      <HintPath>E:\Games\Steam\steamapps\common\Q-UP\Q-UP_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+      <HintPath>lib/Unity.TextMeshPro.dll</HintPath>
     </Reference>
     <Reference Include="UnityConsole">
-      <HintPath>E:\Games\Steam\steamapps\common\Q-UP\Q-UP_Data\Managed\UnityConsole.dll</HintPath>
+      <HintPath>lib/UnityConsole.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>E:\Games\Steam\steamapps\common\Q-UP\Q-UP_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>lib/UnityEngine.UI.dll</HintPath>
     </Reference>
     <Reference Include="Utils">
-      <HintPath>E:\Games\Steam\steamapps\common\Q-UP\Q-UP_Data\Managed\Utils.dll</HintPath>
+      <HintPath>lib/Utils.dll</HintPath>
     </Reference>
   </ItemGroup>
   
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="start steam://launch/3730790" />
+    <Exec Command="cp bin/Debug/netstandard2.1/cxve.qap.dll out" />
+    <Exec Command="fish -c 'open steam://launch/3730790'" />
   </Target>
 </Project>
