@@ -137,7 +137,7 @@ internal class Client
 
                 itemPoolEfficiencyUpgradePoints = Convert.ToInt32(slotData["itemPoolEfficiencyUpgradePoints"]),
                 itemPoolEfficiencyCrystals = Convert.ToInt32(slotData["itemPoolEfficiencyCrystals"]),
-                itemPoolEfficiencyCorruptionShards = 1, // this setting was removed because it was kinda useless, corruption shards are now filler
+                itemPoolEfficiencyCorruptionShards = Convert.ToInt32(slotData["itemPoolEfficiencyCorruptionShards"]),
 
                 sanityNumChallenges = Convert.ToInt32(slotData["sanityNumChallenges"]),
                 sanityNumChallengesTier4 = Convert.ToInt32(slotData["sanityNumChallengesTier4"]),
