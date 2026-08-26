@@ -221,7 +221,10 @@ internal class UI
 
         GUILayout.Label($"Q-UP ARCHIPELAGO v{MyPluginInfo.PLUGIN_VERSION}", guiMain);
         GUILayout.Space(10);
-        if (GUILayout.Button("Start New Run", guiButton)) gui_state = GUI_STATE.START_RUN;
+        if (GUILayout.Button("Start New Run", guiButton)) {
+            slot.file = "";
+            gui_state = GUI_STATE.START_RUN;
+        }
         GUILayout.Button("", guiButtonBelow);
         GUILayout.Space(28);
 
@@ -335,15 +338,6 @@ internal class UI
         TextField("Slot", ref slot.slot);
         TextField("Pass", ref slot.pass);
 
-        // this is broken for some reason
-        /*GUILayout.BeginHorizontal();
-        GUILayout.Label("Pass: ", guiMainTextRight, GUILayout.Width(100));
-        GUILayout.BeginVertical();
-        slot.pass = GUILayout.PasswordField(slot.pass, '*', guiTextField);
-        GUILayout.Button("", guiButtonBelow);
-        GUILayout.EndVertical();
-        GUILayout.EndHorizontal();*/
-
         GUILayout.FlexibleSpace();
         GUILayout.BeginHorizontal();
         GUILayout.BeginVertical();
@@ -377,24 +371,6 @@ internal class UI
         GUI_Login("Continue Run");
         // this is true, when the connect button in GUI_Login was clicked
         if (gui_state == GUI_STATE.CONNECTED) Client.Instance.ContinueRun(slot);
-    }
-
-    // used to show debug methods in UI
-    internal void DebugUI()
-    {
-        GUILayout.BeginArea(new Rect(Screen.width - 200 - 10, Screen.height - 150 - 10, 200, 150), guiDebug);
-
-        GUILayout.BeginVertical();
-        if (GUILayout.Button("DELETE AP SAVES")) Debug.DeleteSavesAP();
-        if (GUILayout.Button("DUMP ACTIVE NODES")) Debug.DumpActiveMapNodes();
-        //if (GUILayout.Button("DUMP PROGRESSDATA MATCH DATA")) Debug.DumpMatchData();
-        //if (GUILayout.Button("DUMP SHOP FEATURES")) Debug.DumpShopFeatures();
-        //if (GUILayout.Button("DUMP SKILL DATA")) Debug.DumpSkillData();
-        //if (GUILayout.Button("DUMP RANKS SO")) Debug.DumpRankSO();
-        //if (GUILayout.Button("DUMP SKILL MAP PREFABS")) Debug.DumpSkillMapNodes();
-        GUILayout.EndVertical();
-
-        GUILayout.EndArea();
     }
 
     // displays Q-AP version on the bottom right corner while connected
@@ -470,7 +446,5 @@ internal class UI
 
         if (gui_state == GUI_STATE.INIT || gui_state == GUI_STATE.CONNECTED) gui_error = GUI_ERROR.NONE;
         if (gui_error != GUI_ERROR.NONE) GUI_Error();
-
-        //if (Plugin.isDebug) DebugUI();
     }
 }
