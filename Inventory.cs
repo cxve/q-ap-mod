@@ -13,6 +13,7 @@ internal class Inventory
 {
     ManualLogSource Logger { get => Plugin.Logger; }
     Dictionary<long, int> inventory = [];
+    Dictionary<int, List<long>> locationsReceived = [];
     internal bool isReadyToReceiveItems = false;
     Dictionary<int, int> checksChallenges = new Dictionary<int, int>()
     {
@@ -44,10 +45,16 @@ internal class Inventory
         Simpleton<HackerManager>.i.StartCoroutine(RunOnMain());
     }
 
-    internal bool AddToInventoryAndCheckIfNew(long id)
+    internal bool AddToInventoryAndCheckIfNew(ItemInfo item)
     {
-        Logger.LogInfo($"Check if item with id {id} is already in inventory");
+        var id = item.ItemId;
+        Logger.LogInfo($"Check if item {id} sent by {item.Player} from {item.LocationId} is already in inventory");
         var data = Client.Instance.SaveData;
+
+        if (!locationsReceived.ContainsKey(item.Player)) locationsReceived[item.Player] = [item.LocationId];
+        else if (!locationsReceived[item.Player].Contains(item.LocationId)) locationsReceived[item.Player].Add(item.LocationId);
+        else throw new Exception($"Item {id} sent by {item.Player} from {item.LocationId} was already added to the inventory!");
+
         if (!inventory.ContainsKey(id)) inventory[id] = 1;
         else ++inventory[id];
         Logger.LogInfo($"Temp Inventory Count {inventory[id]}");
@@ -70,10 +77,13 @@ internal class Inventory
 
     internal void GiveItem(ItemInfo item)
     {
-        bool isNew = AddToInventoryAndCheckIfNew(item.ItemId);
-        string sender = "Somebody";
-        if (item.Player.Name != "") sender = item.Player.Name;
-        string title = Client.Instance.IsThisMe(sender) ? "You found this!" : $"{sender} found this!";
+        bool isNew;
+        try {
+            isNew = AddToInventoryAndCheckIfNew(item);
+        } catch (Exception ex) {
+            Plugin.Logger.LogError($"Could not add item to inventory, inventory remains unchanged!\n{ex.Message}");
+            return;
+        }
         if (!isReadyToReceiveItems)
         {
             Logger.LogWarning("The client was given an item, but was not ready to receive items yet. Try again later...");
