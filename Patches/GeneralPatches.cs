@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using System.Collections.Generic;
 using System.Linq;
 using TastyTools;
 using UnityEngine;
@@ -113,4 +114,15 @@ internal class GeneralPatches
     [HarmonyPatch(typeof(CutsceneOneInLobbyManager), nameof(CutsceneOneInLobbyManager.StartCutscene))]
     [HarmonyPostfix]
     public static void AddAct2Skip(CutsceneOneInLobbyManager __instance) => __instance.hackerPostit.SetActive(true);
+
+    [HarmonyPatch(typeof(EmailParser), nameof(EmailParser.InitializeProgress))]
+    [HarmonyPrefix]
+    public static void LoadMailFromAPSave(ref Dictionary<string, EmailData> ___emailDatabase) {
+        // delete emails loaded from other AP save files
+        foreach (var k in ___emailDatabase.Keys.Where(k => k.StartsWith("Q-AP_")))
+            ___emailDatabase.Remove(k);
+
+        foreach (var kv in Client.Instance.SaveData.mail)
+            ___emailDatabase.Add(kv.Key, Client.Instance.BuildMailData(kv.Value));
+    }
 }

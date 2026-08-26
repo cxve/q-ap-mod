@@ -8,6 +8,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using TastyTools;
 using UnityEngine;
 
@@ -82,7 +83,7 @@ internal class Client
         }
     }
 
-    Config.Slot connected_slot; 
+    Config.Slot connected_slot;
     internal Inventory inventory;
     bool isClosing = false; // true if the client is closing the connection
 
@@ -151,7 +152,7 @@ internal class Client
                 return "";
             }
             void RegisterCommand(string cmd, string desc, string syntax = "", bool skipCommand = false) => instance.RegisterCommand(cmd, (args) => SessionRelay(cmd, args, skipCommand), desc, syntax == "" ? cmd : syntax);
-            
+
             string Help(string[] args)
             {
                 string result = "To send a message or command to the Archipelago server, use <color=yellow>/say <message>.</color>\n" +
@@ -362,6 +363,45 @@ internal class Client
             AudioManager.SafePlayOneShot(sound);
         }
         Simpleton<NavManager>.i.RefreshButtonVisibility();
+    }
+
+    internal EmailData BuildMailData(Config.MailData data) => BuildMailData(data.item, data.itemName, data.context);
+    internal EmailData BuildMailData(SerializableItemInfo item, string itemName, string context) =>
+        new()
+        {
+            Filename = $"Q-AP_{item.Player.Slot}_{item.LocationId}",
+            Sender = $"{regexMail.Replace(item.Player.Alias, "")}@{regexMail.Replace(item.LocationGame, "")}.ap",
+            Subject = $"{itemName.Sanitize()} found!",
+            BodyContent = [ new() {
+                Text = $"[[size=24]]Hey there {connected_slot.slot}!",
+                ParagraphType = "p"
+            }, new() {
+                Text = $"[[size=24]]I found your [[b]]{itemName.Sanitize()}[[/b]] in [[b]]{item.LocationGame.Sanitize()}[[/b]] at [[b]]{item.LocationDisplayName.Sanitize()}[[/b]].",
+                ParagraphType = "p"
+            }, new() {
+                Text = $"[[size=24]]{context.Sanitize()}",
+                ParagraphType = "p"
+            }, new() {
+                Text = "You are welcome! :)",
+                ParagraphType = "p"
+            }, new() {
+                Text = $"[[size=16]][[b]]{item.Player.Alias.Sanitize()}\r\n{item.LocationGame.Sanitize()} Player[[/b]] [[/size]]",
+                ParagraphType = "p"
+            }]
+        };
+
+    static readonly Regex regexMail = new("[^\\w\\d_\\-]");
+    internal void SendMail(SerializableItemInfo item, string itemName, string context)
+    {
+        var data = BuildMailData(item, itemName, context);
+
+        var saveData = SaveData;
+        saveData.mail[data.Filename] = new(item, itemName, context);
+        SaveData = saveData;
+
+        Simpleton<EmailParser>.i.GetFieldValue<Dictionary<string, EmailData>>("emailDatabase").Add(data.Filename, data);
+        SimpleScreen<MailManager>.i.triggeredEmails.Add(data.Filename);
+        SimpleScreen<MailManager>.i.AddMailToInbox(data);
     }
 
     internal bool IsThisMe(string sender) => sender == connected_slot.slot;

@@ -1,4 +1,5 @@
-﻿using BepInEx.Logging;
+﻿using Archipelago.MultiClient.Net.Models;
+using BepInEx.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -124,10 +125,19 @@ static public class Config
         public void UpdateLastPlayed() => lastPlayed = DateTime.Now;
     }
 
+    // stores mail data
+    public class MailData(SerializableItemInfo item, string itemName, string context)
+    {
+        public SerializableItemInfo item = item;
+        public string itemName = itemName;
+        public string context = context;
+    }
+
     // stores run data
     public class Data
     {
         public Dictionary<long, int> inventory = [];
+        public Dictionary<string, MailData> mail = [];
         public List<long> locations = [];
     }
 

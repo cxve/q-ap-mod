@@ -90,11 +90,11 @@ internal class Inventory
             return;
         }
         Logger.LogInfo($"Giving item \"{item.ItemName}\"");
-        if (Data.GetFeature(item, out var feature)) { if (isNew) GiveFeature(title, feature); }
-        else if (item.ItemName == "Crystals") { if (isNew) GiveCrystals(title, inventory[item.ItemId]); }
-        else if (item.ItemName == "Corruption Shards") { if (isNew) GiveCorruptionShards(title, inventory[item.ItemId]); }
-        else if (item.ItemName == "Gold") { if (isNew) GiveGold(title, inventory[item.ItemId]); }
-        else if (item.ItemName == "Upgrade Point") GiveUpgrade(title, isNew);
+        if (Data.GetFeature(item, out var feature)) { if (isNew) GiveFeature(item, feature); }
+        else if (item.ItemName == "Crystals") { if (isNew) GiveCrystals(item, inventory[item.ItemId]); }
+        else if (item.ItemName == "Corruption Shards") { if (isNew) GiveCorruptionShards(item, inventory[item.ItemId]); }
+        else if (item.ItemName == "Gold") { if (isNew) GiveGold(item, inventory[item.ItemId]); }
+        else if (item.ItemName == "Upgrade Point") GiveUpgrade(item, isNew);
         else
         {
             switch (item.ItemName)
@@ -108,11 +108,11 @@ internal class Inventory
                 case "39_CATCH_FIRE": SaveManager.globalData.noviceRobot = true; break;
                 case "Ψ": SaveManager.globalData.noviceWizard = true; break;
             }
-            if (isNew) GiveSkill(title, item);
+            if (isNew) GiveSkill(item);
         }
     }
 
-    void GiveSkill(string title, ItemInfo item)
+    void GiveSkill(ItemInfo item)
     {
         if (!Data.GetNodeByName(item.ItemName, out var node)) return;
         Logger.LogInfo("Node found!");
@@ -121,7 +121,7 @@ internal class Inventory
         if (Data.hypernodes.Contains(node.name))
         {
             node.gridPosition = Data.orderToPos[168];
-            Client.Instance.SendNotification(title, $"The hypernode \"<b>{item.ItemName}</b>\" can now appear in the item shop...", "levelup");
+            Client.Instance.SendMail(item.ToSerializable(), item.ItemDisplayName, $"Apparently that's a so-called hypernode, which can now be found in the item shop! I've heard it's useful in endgame.");
             if (Simpleton<SkillManager>.i.activeMap.nodes.Any(x => x.name == node.name))
             {
                 Logger.LogWarning("This hypernode already exists in the active map, will not add another!");
@@ -160,10 +160,10 @@ internal class Inventory
         Logger.LogInfo("Skillmap created!");
         Simpleton<HackerManager>.i.InitializeHackerNodeFromSerialized(Simpleton<SkillManager>.i.activeMap, map, node);
         Logger.LogInfo("Hacker Node initialized!");
-        if (!Data.hypernodes.Contains(node.name)) Client.Instance.SendNotification(title, $"Skill: <b>{item.ItemName}</b>", "levelup");
+        if (!Data.hypernodes.Contains(node.name)) Client.Instance.SendMail(item.ToSerializable(), item.ItemDisplayName, "It's a skill, hope you can make use of it!");
     }
 
-    void GiveFeature(string title, FeatureData.Feature feat)
+    void GiveFeature(ItemInfo item, FeatureData.Feature feat)
     {
         IEnumerator Wait()
         {
@@ -174,12 +174,12 @@ internal class Inventory
             Simpleton<ShopManager>.i.TryUnlockFeature(feat, true);
             SaveManager.CheckNewInitsAfterFeatureUnlock(feat.id);
             Simpleton<NavManager>.i.RefreshButtonVisibility();
-            Client.Instance.SendNotification(title, $"{feat.name}\n\n{feat.description}", "levelup");
+            Client.Instance.SendMail(item.ToSerializable(), feat.name, $"I found this description on the internet: {feat.description}");
         }
         Simpleton<ScreenManager>.i.StartCoroutine(Wait());
     }
 
-    void GiveCrystals(string title, int crystals)
+    void GiveCrystals(ItemInfo item, int crystals)
     {
         int amount = 0;
         int efficiency = Client.Instance.slotData.itemPoolEfficiencyCrystals;
@@ -190,10 +190,10 @@ internal class Inventory
         }
         Simpleton<StatsManager>.i.UpdateStatsAdd("TOTAL_CRYSTAL_EARNED", amount);
         Simpleton<PlayerManager>.i.progressData.EarnCrystal(amount, true);
-        Client.Instance.SendNotification(title, $"{amount} Crystals", "crystal");
+        Client.Instance.SendMail(item.ToSerializable(), $"{amount} Crystals", "Use it to unlock some stuff for your friends, like me ;)");
     }
 
-    void GiveCorruptionShards(string title, int shards)
+    void GiveCorruptionShards(ItemInfo item, int shards)
     {
         int amount = 0;
         int efficiency = Client.Instance.slotData.itemPoolEfficiencyCorruptionShards;
@@ -204,10 +204,10 @@ internal class Inventory
         }
         Simpleton<StatsManager>.i.UpdateStatsAdd("TOTAL_CORRUPTION_SHARDS_EARNED", amount);
         Simpleton<PlayerManager>.i.progressData.EarnCorruptionShard(amount, isLocal: true);
-        Client.Instance.SendNotification(title, $"{amount} Corruption Shards", "crystal");
+        Client.Instance.SendMail(item.ToSerializable(), $"{amount} Corruption Shards", "This will probably come in handy during the second half of your game.");
     }
 
-    void GiveGold(string title, int gold)
+    void GiveGold(ItemInfo item, int gold)
     {
         int amount = UnityEngine.Mathf.RoundToInt(UnityEngine.Random.value * 100) * 1000;
         if (gold < 38)
@@ -217,16 +217,16 @@ internal class Inventory
             amount = UnityEngine.Mathf.RoundToInt(_amount / UnityEngine.Mathf.Pow(10, magnitude - 2)) * (int)UnityEngine.Mathf.Pow(10, magnitude - 2);
         }
         Simpleton<PlayerManager>.i.progressData.EarnGold(amount, true);
-        Client.Instance.SendNotification(title, $"{amount} Gold", "BigGold");
+        Client.Instance.SendMail(item.ToSerializable(), $"{amount} Gold", "Buy yourself something nice in the item shop, if you have it unlocked!");
     }
 
-    void GiveUpgrade(string title, bool isNew)
+    void GiveUpgrade(ItemInfo item, bool isNew)
     {
         var sm = Simpleton<SkillManager>.i;
         int efficiency = Client.Instance.slotData.itemPoolEfficiencyUpgradePoints;
         for (int i = 0; i < efficiency; ++i) sm.activeMap.upgradePointLevelsExplicit.Add(0);
         sm.activeMap.RefreshMap();
         Simpleton<PlayerManager>.i.progressData.upgradePoints = sm.activeMap.upgradePointLevelsExplicit.Count - Simpleton<PlayerManager>.i.progressData.GetSpentUpgradePoints();
-        if (isNew) Client.Instance.SendNotification(title, $"{efficiency} Upgrade Point{(efficiency != 1 ? "s" : "")}", "hackerLevelUP");
+        if (isNew) Client.Instance.SendMail(item.ToSerializable(), $"{efficiency} Upgrade Point{(efficiency != 1 ? "s" : "")}", "You can use it to upgrade your fixed skills, if you have any...");
     }
 }
