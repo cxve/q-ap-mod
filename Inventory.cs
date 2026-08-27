@@ -51,9 +51,12 @@ internal class Inventory
         Logger.LogInfo($"Check if item {id} sent by {item.Player} from {item.LocationId} is already in inventory");
         var data = Client.Instance.SaveData;
 
+        if (item.LocationId >= 0)
+        {
         if (!locationsReceived.ContainsKey(item.Player)) locationsReceived[item.Player] = [item.LocationId];
         else if (!locationsReceived[item.Player].Contains(item.LocationId)) locationsReceived[item.Player].Add(item.LocationId);
         else throw new Exception($"Item {id} sent by {item.Player} from {item.LocationId} was already added to the inventory!");
+        }
 
         if (!inventory.ContainsKey(id)) inventory[id] = 1;
         else ++inventory[id];
