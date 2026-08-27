@@ -35,7 +35,7 @@ internal class HintPatches
     public static void DisplayUnlockInLevelUpAnim(ref string __result)
     {
         if (!Client.Instance.checkRewards.TryGetValue($"Level {level}", out var item)) return;
-        __result = $"You found {Client.Instance.FormatPossessiveName(item.Player.Name)} <b>{item.ItemName}</b>";
+        __result = $"You found {Client.Instance.FormatPossessiveName(item.Player.Name).Sanitize()} <b>{item.ItemName.Sanitize()}</b>";
     }
 
     [HarmonyPatch(typeof(RankUpAnim), nameof(RankUpAnim.Init))]
@@ -45,6 +45,6 @@ internal class HintPatches
         if (Client.Instance.slotData.goal == newRank.id) 
             __instance.crystalAmt.text = $"<size=-2>You reached your <b>Goal</b>!";
         else if (Client.Instance.checkRewards.TryGetValue(newRankName, out var item)) 
-            __instance.crystalAmt.text = $"<size=-2>You found {Client.Instance.FormatPossessiveName(item.Player.Name)} <b>{item.ItemName}</b>!";
+            __instance.crystalAmt.text = $"<size=-2>You found {Client.Instance.FormatPossessiveName(item.Player.Name).Sanitize()} <b>{item.ItemName.Sanitize()}</b>!";
     }
 }

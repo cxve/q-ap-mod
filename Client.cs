@@ -300,7 +300,7 @@ internal class Client
             if (locid < 0) continue;
             var item = task.Result[locid];
             var player = item.Player.Name;
-            feat.name = $"{FormatPossessiveName(player)} {item.ItemName}";
+            feat.name = $"{FormatPossessiveName(player).Sanitize()} {item.ItemName.Sanitize()}";
             // create a fun description according to the item flags
             switch (item.Flags)
             {
