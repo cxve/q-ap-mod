@@ -53,9 +53,9 @@ internal class Inventory
 
         if (item.LocationId >= 0)
         {
-        if (!locationsReceived.ContainsKey(item.Player)) locationsReceived[item.Player] = [item.LocationId];
-        else if (!locationsReceived[item.Player].Contains(item.LocationId)) locationsReceived[item.Player].Add(item.LocationId);
-        else throw new Exception($"Item {id} sent by {item.Player} from {item.LocationId} was already added to the inventory!");
+            if (!locationsReceived.ContainsKey(item.Player)) locationsReceived[item.Player] = [item.LocationId];
+            else if (!locationsReceived[item.Player].Contains(item.LocationId)) locationsReceived[item.Player].Add(item.LocationId);
+            else throw new Exception($"Item {id} sent by {item.Player} from {item.LocationId} was already added to the inventory!");
         }
 
         if (!inventory.ContainsKey(id)) inventory[id] = 1;
@@ -81,9 +81,12 @@ internal class Inventory
     internal void GiveItem(ItemInfo item)
     {
         bool isNew;
-        try {
+        try
+        {
             isNew = AddToInventoryAndCheckIfNew(item);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             Plugin.Logger.LogError($"Could not add item to inventory, inventory remains unchanged!\n{ex.Message}");
             return;
         }
@@ -212,12 +215,12 @@ internal class Inventory
 
     void GiveGold(ItemInfo item, int gold)
     {
-        int amount = UnityEngine.Mathf.RoundToInt(UnityEngine.Random.value * 100) * 1000;
-        if (gold < 38)
+        int amount = Mathf.RoundToInt(UnityEngine.Random.value * 100) * 1000 + 200_000;
+        if (gold < 15)
         {
-            float _amount = 300 * UnityEngine.Mathf.Pow(gold, 1.6f);
-            int magnitude = UnityEngine.Mathf.CeilToInt(UnityEngine.Mathf.Log10(_amount));
-            amount = UnityEngine.Mathf.RoundToInt(_amount / UnityEngine.Mathf.Pow(10, magnitude - 2)) * (int)UnityEngine.Mathf.Pow(10, magnitude - 2);
+            float _amount = 300 * Mathf.Pow(gold, 2.5f);
+            int magnitude = Mathf.CeilToInt(Mathf.Log10(_amount));
+            amount = Mathf.RoundToInt(_amount / Mathf.Pow(10, magnitude - 2)) * (int)Mathf.Pow(10, magnitude - 2);
         }
         Simpleton<PlayerManager>.i.progressData.EarnGold(amount, true);
         Client.Instance.SendMail(item.ToSerializable(), $"{amount} Gold", "Buy yourself something nice in the item shop, if you have it unlocked!");
