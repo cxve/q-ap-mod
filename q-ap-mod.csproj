@@ -54,6 +54,7 @@
   
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="cp bin/Debug/netstandard2.1/cxve.qap.dll out" />
+    <Exec Command="cp bin/Debug/netstandard2.1/cxve.qap.pdb out" />
     <Exec Command="fish -c 'open steam://launch/3730790'" />
   </Target>
 </Project>
