@@ -125,4 +125,10 @@ internal class GeneralPatches
         foreach (var kv in Client.Instance.SaveData.mail)
             ___emailDatabase.Add(kv.Key, Client.Instance.BuildMailData(kv.Value));
     }
+
+    [HarmonyPatch(typeof(ConsoleManager), "OnGUI")]
+    [HarmonyPrefix]
+    public static void ToggleConsoleWithF10() {
+        if (Event.current.keyCode == KeyCode.F10) Event.current.keyCode = KeyCode.BackQuote;
+    }
 }
