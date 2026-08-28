@@ -222,7 +222,7 @@ internal class UI
         GUILayout.Label($"Q-UP ARCHIPELAGO v{MyPluginInfo.PLUGIN_VERSION}", guiMain);
         GUILayout.Space(10);
         if (GUILayout.Button("Start New Run", guiButton)) {
-            slot.file = "";
+            if (slot != null) slot.file = "";
             gui_state = GUI_STATE.START_RUN;
         }
         GUILayout.Button("", guiButtonBelow);
