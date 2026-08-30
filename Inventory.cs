@@ -192,6 +192,7 @@ internal class Inventory
         Logger.LogInfo("Skillmap created!");
         Simpleton<HackerManager>.i.InitializeHackerNodeFromSerialized(activeMap, map, node);
         Logger.LogInfo("Hacker Node initialized!");
+        if (Simpleton<ScreenManager>.i.GetState() == ScreenManager.ScreenState.LobbySkills) Simpleton<ScreenManager>.i.GoToSkill();
         if (!Data.hypernodes.Contains(node.name)) Client.Instance.SendMail(item.ToSerializable(), item.ItemDisplayName, "It's a skill, hope you can make use of it!");
     }
 
