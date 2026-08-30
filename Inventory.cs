@@ -214,9 +214,10 @@ internal class Inventory
 
     void GiveCrystals(ItemInfo item, int crystals)
     {
+        crystals -= 1;
         int amount = 0;
         int efficiency = Client.Instance.slotData.itemPoolEfficiencyCrystals;
-        for (int i = 0; i < efficiency; ++i)
+        for (int i = 1; i < efficiency + 1; ++i)
         {
             if (crystals * efficiency + i < 36) amount += Convert.ToInt32(Client.Instance.rankBackup[crystals * efficiency + i].crystalEarned);
             else amount += UnityEngine.Mathf.RoundToInt(UnityEngine.Random.value * 75 + 75);
