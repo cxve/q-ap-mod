@@ -43,6 +43,7 @@ internal class Client
         internal int sanityNumChallenges;
         internal int sanityNumChallengesTier4;
         internal string version;
+        internal byte[] fixedSkillPos;
     }
     internal SlotData slotData;
     float lastSFX = 0;
@@ -142,7 +143,8 @@ internal class Client
 
                 sanityNumChallenges = Convert.ToInt32(slotData["sanityNumChallenges"]),
                 sanityNumChallengesTier4 = Convert.ToInt32(slotData["sanityNumChallengesTier4"]),
-                version = versionWorld
+                version = versionWorld,
+                fixedSkillPos = [.. slotData["fixedSkillPos"].ToString().Split(",").Select(i => Convert.ToByte(i))]
             };
 
             ConsoleCommandsRepository instance = ConsoleCommandsRepository.Instance;
@@ -283,6 +285,18 @@ internal class Client
         var activeMap = Simpleton<SkillManager>.i.activeMap;
         activeMap.upgradePointLevelsExplicit = [];
         activeMap.upgradePointLevelsFiller = [];
+
+        // reserve fixed skill positions
+        foreach (byte idHex in slotData.fixedSkillPos)
+        {
+            var selectedNode = activeMap.GetNodeAtGridPosition(Data.orderToPos[idHex]);
+            if (selectedNode) continue;
+            if (!Data.GetNodeByName("Epic", out var node)) return;
+            node.autoBuyLevel = 99;
+            node.gridPosition = Data.orderToPos[idHex];
+            var map = new SaveManager.SerializableSkillMap() { character = node.originalChar, nodes = [node] };
+            Simpleton<HackerManager>.i.InitializeHackerNodeFromSerialized(activeMap, map, node);
+        }
 
         // i am prescouting all shop items after establishing a connection
         // because it is easier to prefill the data than to change shop data retroactively

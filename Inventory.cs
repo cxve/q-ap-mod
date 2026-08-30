@@ -122,22 +122,50 @@ internal class Inventory
     {
         if (!Data.GetNodeByName(item.ItemName, out var node)) return;
         Logger.LogInfo("Node found!");
+        var activeMap = Simpleton<SkillManager>.i.activeMap;
         // this fixes hypernode unlocks recalling skills at 0, 0, 0
         // i should at some point write a better solution that will choose any unoccupied slot
         if (Data.hypernodes.Contains(node.name))
         {
             node.gridPosition = Data.orderToPos[168];
             Client.Instance.SendMail(item.ToSerializable(), item.ItemDisplayName, $"Apparently that's a so-called hypernode, which can now be found in the item shop! I've heard it's useful in endgame.");
-            if (Simpleton<SkillManager>.i.activeMap.nodes.Any(x => x.name == node.name))
+            if (activeMap.nodes.Any(x => x.name == node.name))
             {
                 Logger.LogWarning("This hypernode already exists in the active map, will not add another!");
                 return;
             }
         }
         var map = new SaveManager.SerializableSkillMap() { character = node.originalChar, nodes = [node] };
+        // 
+        bool foundPos = false;
+        if (!node.isInventory)
+        {
+            Logger.LogDebug("New Fixed Node!");
+            foreach (byte idHex in Client.Instance.slotData.fixedSkillPos)
+            {
+                var selectedNode = activeMap.GetNodeAtGridPosition(Data.orderToPos[idHex]);
+                if (!selectedNode || selectedNode.isMovable) { Logger.LogError("Something went horribly wrong: There is no fixed node at the selected position!"); continue; }
+                if (selectedNode.autoBuyLevel != 99) continue; // this node is already unlocked
+                UnityEngine.Object.DestroyImmediate(selectedNode.gameObject);
+                foreach (var connection in activeMap.connections)
+                {
+                    if (connection.a == null || connection.b == null)
+                    {
+                        UnityEngine.Object.DestroyImmediate(connection);
+                        Logger.LogDebug("Destroyed a connection...");
+                    }
+                }
+                node.gridPosition = Data.orderToPos[idHex];
+                map.nodes = [node];
+                foundPos = true;
+                break;
+            }
+            if (!foundPos) Logger.LogWarning("All positions supplied by the world are taken. Did something break or did you just cheat? Falling back to legacy system.");
+        }
+
         // determine if there is already a fixed node at the position
-        var activeNode = Simpleton<SkillManager>.i.activeMap.GetNodeAtGridPosition(node.gridPosition);
-        if (activeNode)
+        var activeNode = activeMap.GetNodeAtGridPosition(node.gridPosition);
+        if (!foundPos && activeNode)
         {
             Logger.LogInfo("Node found at requested position");
             if (activeNode.isMovable) Simpleton<SkillManager>.i.skillCharacterWidget.SetInventoryState(activeNode, true, false);
@@ -148,10 +176,9 @@ internal class Inventory
                 for (int i = 0; i < Data.orderToPos.Length; ++i)
                 {
                     var tempNode = new SkillNode() { gridPosition = Data.orderToPos[i] };
-                    if (!Simpleton<SkillManager>.i.activeMap.GetAdjacent(tempNode).Any(x => !x.isMovable))
-                    {
+                    if (activeMap.GetAdjacent(tempNode).Any(x => !x.isMovable)) continue;
                         Logger.LogInfo("Position found without any fixed nodes nearby");
-                        activeNode = Simpleton<SkillManager>.i.activeMap.GetNodeAtGridPosition(tempNode.gridPosition);
+                    activeNode = activeMap.GetNodeAtGridPosition(tempNode.gridPosition);
                         if (activeNode)
                             if (activeNode.isMovable) Simpleton<SkillManager>.i.skillCharacterWidget.SetInventoryState(activeNode, true, false);
                             else continue; // but there was a fixed node on the position itself, skip
@@ -159,12 +186,11 @@ internal class Inventory
                         map.nodes = [node];
                         Logger.LogInfo("Position set!");
                         break;
-                    }
                 }
             }
         }
         Logger.LogInfo("Skillmap created!");
-        Simpleton<HackerManager>.i.InitializeHackerNodeFromSerialized(Simpleton<SkillManager>.i.activeMap, map, node);
+        Simpleton<HackerManager>.i.InitializeHackerNodeFromSerialized(activeMap, map, node);
         Logger.LogInfo("Hacker Node initialized!");
         if (!Data.hypernodes.Contains(node.name)) Client.Instance.SendMail(item.ToSerializable(), item.ItemDisplayName, "It's a skill, hope you can make use of it!");
     }
