@@ -311,7 +311,7 @@ internal class Client
             feat.id += 100;
             for (int j = 0; j < feat.prereqs.Count; ++j) feat.prereqs[j] += 100;
             var locid = session.Locations.GetLocationIdFromName("Q-UP", feat.constName);
-            if (locid < 0) continue;
+            if (locid < 0 || !task.Result.ContainsKey(locid)) continue;
             var item = task.Result[locid];
             var player = item.Player.Name;
             feat.name = $"{FormatPossessiveName(player).Sanitize()} {item.ItemName.Sanitize()}";
