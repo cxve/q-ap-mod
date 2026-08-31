@@ -91,12 +91,18 @@ internal class CheckPatches
         if (challenge.Color == ChallengeColor.Green) __result = 0;
     }
 
+    internal static string challengeQueueLocation;
+    internal static Coroutine challengeQueue;
     [HarmonyPatch(typeof(AchievementsManager), nameof(AchievementsManager.OnChallengeComplete))]
     [HarmonyPrefix]
     public static bool SendChallengeCheck(Challenge challenge)
     {
         if (challenge.Color == ChallengeColor.Green)
-            Client.Instance.SendCheck($"Tier {challenge.challengeTier} Challenge {Client.Instance.inventory.ChallengeCheck(challenge.challengeTier)}");
+        {
+            challengeQueueLocation = $"Tier {challenge.challengeTier} Challenge {Client.Instance.inventory.ChallengeCheck(challenge.challengeTier)}";
+            Client.Instance.QueueCheck(challengeQueueLocation);
+            challengeQueue = Client.Instance.QueueSend();
+        }
         return false;
     }
 
@@ -133,7 +139,8 @@ internal class CheckPatches
     public static void FixChallengeRewardAgain(ChallengeManager __instance)
     {
         int index;
-        while ((index = __instance.activeChallenges.FindIndex(x => x.Color == ChallengeColor.Green && x.GetRewardMultiplier() > 0)) >= 0) {
+        while ((index = __instance.activeChallenges.FindIndex(x => x.Color == ChallengeColor.Green && x.GetRewardMultiplier() > 0)) >= 0)
+        {
             __instance.activeChallenges[index].SetRewardMultiplier(0);
             __instance.challengeUIElements[index].UpdateChallenge(__instance.activeChallenges[index], index);
         }

@@ -461,7 +461,7 @@ internal class Client
         }
     }
 
-    internal void QueueSend()
+    internal Coroutine QueueSend()
     {
         session.Locations.CompleteLocationChecks(checkQ.Keys.ToArray());
         Logger.LogInfo("Queue was submitted!");
@@ -477,7 +477,7 @@ internal class Client
             }
             checkQ.Clear();
         }
-        Simpleton<ScreenManager>.i.StartCoroutine(Wait());
+        return Simpleton<ScreenManager>.i.StartCoroutine(Wait());
     }
 
     // send checks without any scouting!

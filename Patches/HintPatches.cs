@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using System.Collections;
+using HarmonyLib;
 using TastyTools;
 
 namespace cxve.qap.Patches;
@@ -46,5 +47,30 @@ internal class HintPatches
             __instance.crystalAmt.text = $"<size=-2>You reached your <b>Goal</b>!";
         else if (Client.Instance.checkRewards.TryGetValue(newRankName, out var item)) 
             __instance.crystalAmt.text = $"<size=-2>You found {Client.Instance.FormatPossessiveName(item.Player.Name).Sanitize()} <b>{item.ItemName.Sanitize()}</b>!";
+    }
+
+    static int challengeIndex;
+
+    [HarmonyPatch(typeof(ChallengeManager), nameof(ChallengeManager.OnCompletedChallengeClicked))]
+    [HarmonyPrefix]
+    public static void RememberChallengeIndex(int challengeIndex) {
+        HintPatches.challengeIndex = challengeIndex;
+    }
+
+    [HarmonyPatch(typeof(NavManager), nameof(NavManager.QueueNotification))]
+    [HarmonyPrefix]
+    public static bool ReplaceChallengeCompletedNotification(string header) {
+        if (challengeIndex != -1 && header == "Challenge Completed!" && Simpleton<ChallengeManager>.i.activeChallenges[challengeIndex].Color == ChallengeColor.Green) {
+            challengeIndex = -1;
+            IEnumerator WaitForHint() {
+                yield return CheckPatches.challengeQueue;
+                if (!Client.Instance.checkRewards.TryGetValue(CheckPatches.challengeQueueLocation, out var item)) yield break;
+                string body = $"You found {Client.Instance.FormatPossessiveName(item.Player.Name).Sanitize()} <b>{item.ItemName.Sanitize()}</b>.";
+                Simpleton<NavManager>.i.QueueNotification(header, body);
+            }
+            Simpleton<NavManager>.i.StartCoroutine(WaitForHint());
+            return false;
+        }
+        return true;
     }
 }
