@@ -147,6 +147,24 @@ internal class Client
                 fixedSkillPos = [.. slotData["fixedSkillPos"].ToString().Split(",").Select(i => Convert.ToByte(i))]
             };
 
+            RegisterConsole();
+
+            // this returns true, if the save file has not been created yet
+            // in that case, no need to precheck challenge locations
+            if (connected_slot.file != "")
+            {
+                for (int tier = 1; tier < 5; ++tier)
+                    for (int i = 0; i < 10; ++i)
+                        if (SaveData.locations.Contains(1_000_000 + 300 + (tier - 1) * 10 + i))
+                            inventory.ChallengeCheck(tier);
+                session.Locations.CompleteLocationChecksAsync(SaveData.locations.ToArray());
+            }
+            return true;
+        }
+    }
+
+    void RegisterConsole()
+    {
             ConsoleCommandsRepository instance = ConsoleCommandsRepository.Instance;
             string SessionRelay(string cmd, string[] args, bool skipCommand = false)
             {
@@ -196,19 +214,6 @@ internal class Client
             }
 
             session.MessageLog.OnMessageReceived += MessageReceived;
-
-            // this returns true, if the save file has not been created yet
-            // in that case, no need to precheck challenge locations
-            if (connected_slot.file != "")
-            {
-                for (int tier = 1; tier < 5; ++tier)
-                    for (int i = 0; i < 10; ++i)
-                        if (SaveData.locations.Contains(1_000_000 + 300 + (tier - 1) * 10 + i))
-                            inventory.ChallengeCheck(tier);
-                session.Locations.CompleteLocationChecksAsync(SaveData.locations.ToArray());
-            }
-            return true;
-        }
     }
 
     // required to prevent crashes
