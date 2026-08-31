@@ -81,7 +81,7 @@ internal class CheckPatches
         if (__instance.challengeReward.text != "0") return;
         __instance.challengeReward.spriteAsset = Plugin.APIcon;
         __instance.challengeReward.font = TMP_Settings.defaultFontAsset;
-        __instance.challengeReward.text = "<color=#a0c4ff><voffset=-4><pos=-7>•<color=#fdffb6><voffset=4><pos=-7>•<color=#ffadad><voffset=8><pos=0>•<voffset=4><color=#caffbf><pos=7>•<voffset=-4><pos=7><color=#bdb2ff>•<voffset=-8><color=#ffd6a5><pos=0>•";
+        __instance.challengeReward.text = Util.BuildAPIcon();
     }
 
     [HarmonyPatch(typeof(ChallengeManager), nameof(ChallengeManager.GetCorruptionShardReward))]
