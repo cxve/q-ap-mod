@@ -226,6 +226,7 @@ internal class Inventory
         Simpleton<StatsManager>.i.UpdateStatsAdd("TOTAL_CRYSTAL_EARNED", amount);
         Simpleton<PlayerManager>.i.progressData.EarnCrystal(amount, true);
         Client.Instance.SendMail(item.ToSerializable(), $"{amount} Crystals", "Use it to unlock some stuff for your friends, like me ;)");
+        if (Simpleton<ScreenManager>.i.GetState() == ScreenManager.ScreenState.LobbyShop) Simpleton<ScreenManager>.i.GoToShop();
     }
 
     void GiveCorruptionShards(ItemInfo item, int shards)
