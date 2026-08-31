@@ -101,6 +101,7 @@ internal class Inventory
         else if (item.ItemName == "Corruption Shards") { if (isNew) GiveCorruptionShards(item, inventory[item.ItemId]); }
         else if (item.ItemName == "Gold") { if (isNew) GiveGold(item, inventory[item.ItemId]); }
         else if (item.ItemName == "Upgrade Point") GiveUpgrade(item, isNew);
+        else if (item.ItemName == "Random Gear") { if (isNew) GiveGear(item); }
         else
         {
             switch (item.ItemName)
@@ -252,6 +253,13 @@ internal class Inventory
         }
         Simpleton<PlayerManager>.i.progressData.EarnGold(amount, true);
         Client.Instance.SendMail(item.ToSerializable(), $"{amount} Gold", "Buy yourself something nice in the item shop, if you have it unlocked!");
+    }
+
+    void GiveGear(ItemInfo item)
+    {
+        var gear = Simpleton<ShopManager>.i.shopV2Picks.GetRandomItem(10);
+        Simpleton<ItemManager>.i.CreateItemInstanceFromBlueprint(gear.item);
+        Client.Instance.SendMail(item.ToSerializable(), $"{gear.item.displayName}", $"Actually, I bought it from the item shop. The clerk described it like this: {(gear.item.useDescriptionOverride ? gear.item.descriptionOverride : gear.item.descriptionGenerated)}");
     }
 
     void GiveUpgrade(ItemInfo item, bool isNew)
