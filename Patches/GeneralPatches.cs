@@ -131,4 +131,11 @@ internal class GeneralPatches
     public static void ToggleConsoleWithF10() {
         if (Event.current.keyCode == KeyCode.F10) Event.current.keyCode = KeyCode.BackQuote;
     }
+
+    [HarmonyPatch(typeof(SkillNode), nameof(SkillNode.Refresh))]
+    [HarmonyPostfix]
+    public static void ChangeLockedSkillText(SkillNode __instance) {
+        if (__instance.autoBuyLevel > 90) __instance.lockedText.text = 
+        "<color=#000A><voffset=-7><pos=-16><size=72>•</size></color><size=12>" + Util.BuildAPIcon(0, 14);
+    }
 }
