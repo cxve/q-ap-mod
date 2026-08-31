@@ -87,9 +87,14 @@ static internal class Debug
         if (Directory.Exists(fullpath)) Directory.Delete(fullpath, true);
     }
 
+    static string SetTimeScale(int scale) => (Time.timeScale = scale).ToString();
+
     static internal void RegisterCommands()
     {
         var instance = ConsoleCommandsRepository.Instance;
         instance.RegisterCommand("dump_skill_data", _ => DumpSkillData(), "Dump skill data to file...");
+        instance.RegisterCommand("get_time_scale", _ => Time.timeScale.ToString(), "Get the game's time scale");
+        instance.RegisterCommand("set_time_scale_0", _ => SetTimeScale(0), "Set the game's time scale to 0");
+        instance.RegisterCommand("set_time_scale_1", _ => SetTimeScale(1), "Set the game's time scale to 1");
     }
 }
