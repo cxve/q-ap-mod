@@ -162,4 +162,62 @@ internal class CheckPatches
         if (___mergeChallenges.Count > 0) return false;
         return true;
     }
+
+    static void SetTargetBonusText(TextMeshProUGUI targetBonusText) {
+        if (Client.Instance.IsRecyclingSetAvailable(Simpleton<PlayerManager>.i.progressData.currentTargetBonus))
+            targetBonusText.text = targetBonusText.text.Replace("2x", 
+            $"<line-height=0>\n<color=#000000AA><pos=148><voffset=-14><size=62>•</size></color><size=12>{Util.BuildAPIconSmall(160, 4)}</size><pos=173><voffset=0>");
+    }
+
+    [HarmonyPatch(typeof(EquipScreenManager), nameof(EquipScreenManager.CheckTargetBonus))]
+    [HarmonyPostfix]
+    public static void TargetBonusWhenGearIsOpened(TextMeshProUGUI ___targetBonusText) {
+        SetTargetBonusText(___targetBonusText);
+    }
+
+    [HarmonyPatch(typeof(EquipScreenManager), "SetNewTargetBonus")]
+    [HarmonyPostfix]
+    public static void TargetBonusAfterRecycle(TextMeshProUGUI ___targetBonusText)
+    {
+        SetTargetBonusText(___targetBonusText);
+    }
+
+    [HarmonyPatch(typeof(EquipScreenManager), nameof(EquipScreenManager.GetBuybackInfo))]
+    [HarmonyPostfix]
+    public static void SetRewardToOne(ref (float bonus, string text, bool isTargetBonus, int totalSellValue) __result)
+    {
+        if (__result.isTargetBonus && Client.Instance.IsRecyclingSetAvailable(__result.text))
+        {
+            __result.bonus = 0;
+            __result.totalSellValue = 1;
+        }
+    }
+
+    static bool ShouldSendRecyclingSetCheck(EquipScreenManager instance, out string set)
+    {
+        set = "";
+        if (!SaveManager.IsFeatureUnlockedLocally(46)) return false;
+        var items = (from node in instance.itemNodes where instance.buybackSlots.Contains(node.currentSlot) select node.item).ToList();
+        var (_, text, isTargetBonus, _) = instance.GetBuybackInfo(items);
+        set = text;
+        return isTargetBonus;
+    }
+
+    [HarmonyPatch(typeof(EquipScreenManager), "RefreshSellValue")]
+    [HarmonyPostfix]
+    public static void RefreshSellValue(EquipScreenManager __instance)
+    {
+        if (!ShouldSendRecyclingSetCheck(__instance, out _)) return;
+        __instance.loadBonusText.text = "SET BONUS: Archipelago Item";
+        __instance.totalSellValueText.text += "<color=white> + 1</color><size=12>" + Util.BuildAPIconSmall(192, 4);
+        SetTargetBonusText(__instance.targetBonusText);
+    }
+
+    [HarmonyPatch(typeof(EquipScreenManager), "SellBuybackItemsPressed")]
+    [HarmonyPrefix]
+    public static void SendRecyclingSetCheck(EquipScreenManager __instance)
+    {
+        if (!ShouldSendRecyclingSetCheck(__instance, out string set)) return;
+        Client.Instance.SendCheck(set + " Set");
+    }
 }

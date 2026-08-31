@@ -205,6 +205,8 @@ internal class Data
         new(-1, 7, -6)
     ];
 
+    internal static readonly string[] recycling_sets = ["Double Triple", "Six of a Kind", "Typical", "Two by Four", "Four of a Kind", "PVP", "Three Pairs", "Timeline Saturated", "Three of a Kind", "Two Pairs"];
+
     // map skill names to their serialized node data, used below
     static void GenerateDictionary()
     {

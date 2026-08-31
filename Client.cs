@@ -444,6 +444,11 @@ internal class Client
         return CountChallengeChecks(tier) < challenges[tier - 1];
     }
 
+    internal bool IsRecyclingSetAvailable(string set) {
+        var id = Array.IndexOf(Data.recycling_sets, set);
+        return !SaveData.locations.Contains(1_000_400 + id);
+    }
+
     // put upcoming checks into a queue. this was made to improve scouting reliability by only sending one scout request instead of 5+
     Dictionary<long, string> checkQ = new();
     internal void QueueCheck(string check)
