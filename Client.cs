@@ -344,6 +344,16 @@ internal class Client
         }
 
         inventory.isReadyToReceiveItems = true;
+
+        // send all unsent locations
+        foreach (var location in SaveData.locations) QueueCheck(location);
+        QueueSend();
+
+        // get all locations already sent
+        var saveData = SaveData;
+        saveData.locations.AddRange(session.Locations.AllLocationsChecked);
+        SaveData = saveData;
+
         // imply slot data from locations
         int[] numChallenges = [0, 0, 0, 0];
         for (int tier = 0; tier < 4; ++tier) numChallenges[tier] = session.Locations.AllLocations.Count(x => x >= 1_000_300 + tier * 10 && x < 1_000_300 + (tier + 1) * 10);
@@ -455,33 +465,37 @@ internal class Client
 
     // put upcoming checks into a queue. this was made to improve scouting reliability by only sending one scout request instead of 5+
     Dictionary<long, string> checkQ = new();
-    internal void QueueCheck(string check)
+    internal void QueueCheck(string check) => QueueCheck(session.Locations.GetLocationIdFromName("Q-UP", check), check);
+
+    internal void QueueCheck(long id, string check = null)
     {
-        long id = session.Locations.GetLocationIdFromName("Q-UP", check);
-        if (id < 0) Logger.LogError($"Cannot queue check \"{check}\", check not found!");
+        if (id < 0) Logger.LogError($"Cannot queue check \"{check ?? id.ToString()}\", check not found!");
         else
         {
             // save check in advance, checks get resent on reconnect if anything fails
             var data = SaveData;
+            if (!data.locations.Contains(id))
+            {
             data.locations.Add(id);
             SaveData = data;
+            }
             checkQ[id] = check;
-            Logger.LogInfo($"Successfully added \"{check}\" to the queue.");
+            Logger.LogDebug($"Successfully added \"{check ?? id.ToString()}\" to the queue.");
         }
     }
 
     internal Coroutine QueueSend()
     {
-        session.Locations.CompleteLocationChecks(checkQ.Keys.ToArray());
-        Logger.LogInfo("Queue was submitted!");
-        var task = session.Locations.ScoutLocationsAsync(checkQ.Keys.ToArray());
+        session.Locations.CompleteLocationChecks([.. checkQ.Keys]);
+        Logger.LogInfo($"Queue was submitted with {checkQ.Keys.Count} checks!");
+        var task = session.Locations.ScoutLocationsAsync([.. checkQ.Keys]);
         IEnumerator Wait()
         {
             while (!task.IsCompleted) yield return new WaitForFixedUpdate();
             foreach (var result in task.Result)
             {
                 // cache check rewards for later
-                if (checkQ.TryGetValue(result.Key, out string name))
+                if (checkQ.TryGetValue(result.Key, out string name) && name != null)
                     checkRewards[name] = result.Value;
             }
             checkQ.Clear();
