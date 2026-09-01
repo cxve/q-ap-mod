@@ -260,7 +260,7 @@ internal class Inventory
     {
         var gear = Simpleton<ShopManager>.i.shopV2Picks.GetRandomItem(10);
         Simpleton<ItemManager>.i.CreateItemInstanceFromBlueprint(gear.item);
-        Client.Instance.SendMail(item.ToSerializable(), $"{gear.item.displayName}", $"Actually, I bought it from the item shop. The clerk described it like this: {(gear.item.useDescriptionOverride ? gear.item.descriptionOverride : gear.item.descriptionGenerated)}");
+        Client.Instance.SendMail(item.ToSerializable(), $"{gear.item.displayName}", $"Actually, I bought it from the item shop. It reminded me of you, so I just had to get you one!");
     }
 
     void GiveUpgrade(ItemInfo item, bool isNew)
