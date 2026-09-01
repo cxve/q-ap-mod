@@ -140,4 +140,22 @@ Plugin.Logger.LogDebug($"Adding mail {kv.Key}...");
         if (__instance.autoBuyLevel > 90) __instance.lockedText.text = 
         "<color=#000A><voffset=-7><pos=-16><size=72>•</size></color><size=12>" + Util.BuildAPIcon(0, 14);
     }
+
+    static string loadout;
+    [HarmonyPatch(typeof(SkillLoadoutManager), nameof(SkillLoadoutManager.LoadLoadout))]
+    [HarmonyPrefix]
+    public static void GetSkillPositions(string loadoutName) => loadout = loadoutName;
+
+    [HarmonyPatch(typeof(SkillLoadoutManager), nameof(SkillLoadoutManager.LoadLoadout))]
+    [HarmonyPostfix]
+    public static void SetSkillPositions() {
+        SaveManager.SerializableSkillLoadout map = Simpleton<PlayerManager>.i.progressData.skillLoadouts.FirstOrDefault((SaveManager.SerializableSkillLoadout l) => l.name == loadout);
+        foreach (var node in Simpleton<SkillManager>.i.activeMap.nodes) {
+            node.gridPosition = map.map.nodes.First(_node => _node.name == node.name).gridPosition;
+            node.transform.localPosition = node.gridPosition;
+            node.map.SnapNodeToGridPosition(node);
+            node.Refresh();
+        }
+        
+    }
 }
