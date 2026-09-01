@@ -48,7 +48,7 @@ internal class Inventory
     internal bool AddToInventoryAndCheckIfNew(ItemInfo item)
     {
         var id = item.ItemId;
-        Logger.LogInfo($"Check if item {id} sent by {item.Player} from {item.LocationId} is already in inventory");
+        Logger.LogDebug($"Check if item {id} sent by {item.Player} from {item.LocationId} is already in inventory");
         var data = Client.Instance.SaveData;
 
         if (item.LocationId >= 0)
@@ -60,15 +60,15 @@ internal class Inventory
 
         if (!inventory.ContainsKey(id)) inventory[id] = 1;
         else ++inventory[id];
-        Logger.LogInfo($"Temp Inventory Count {inventory[id]}");
+        Logger.LogDebug($"Temp Inventory Count {inventory[id]}");
         if (!data.inventory.ContainsKey(id) || inventory[id] > data.inventory[id])
         {
-            Logger.LogInfo($"Item is new, make item persistant");
+            Logger.LogDebug($"Item is new, make item persistant");
             data.inventory[id] = inventory[id];
             Client.Instance.SaveData = data;
             return true;
         }
-        Logger.LogInfo($"Permanent Inventory Count {data.inventory[id]}");
+        Logger.LogDebug($"Permanent Inventory Count {data.inventory[id]}");
         return false;
     }
 
@@ -95,7 +95,7 @@ internal class Inventory
             Logger.LogWarning("The client was given an item, but was not ready to receive items yet. Try again later...");
             return;
         }
-        Logger.LogInfo($"Giving item \"{item.ItemName}\"");
+        Logger.LogDebug($"Giving item \"{item.ItemName}\"");
         if (Data.GetFeature(item, out var feature)) { if (isNew) GiveFeature(item, feature); }
         else if (item.ItemName == "Crystals") { if (isNew) GiveCrystals(item, inventory[item.ItemId]); }
         else if (item.ItemName == "Corruption Shards") { if (isNew) GiveCorruptionShards(item, inventory[item.ItemId]); }
