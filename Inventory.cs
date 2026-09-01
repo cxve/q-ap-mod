@@ -130,11 +130,7 @@ internal class Inventory
         {
             node.gridPosition = Data.orderToPos[168];
             Client.Instance.SendMail(item.ToSerializable(), item.ItemDisplayName, $"Apparently that's a so-called hypernode, which can now be found in the item shop! I've heard it's useful in endgame.");
-            if (activeMap.nodes.Any(x => x.name == node.name))
-            {
-                Logger.LogWarning("This hypernode already exists in the active map, will not add another!");
-                return;
-            }
+            return;
         }
         var map = new SaveManager.SerializableSkillMap() { character = node.originalChar, nodes = [node] };
         // 
@@ -178,15 +174,15 @@ internal class Inventory
                 {
                     var tempNode = new SkillNode() { gridPosition = Data.orderToPos[i] };
                     if (activeMap.GetAdjacent(tempNode).Any(x => !x.isMovable)) continue;
-                        Logger.LogInfo("Position found without any fixed nodes nearby");
+                    Logger.LogInfo("Position found without any fixed nodes nearby");
                     activeNode = activeMap.GetNodeAtGridPosition(tempNode.gridPosition);
-                        if (activeNode)
-                            if (activeNode.isMovable) Simpleton<SkillManager>.i.skillCharacterWidget.SetInventoryState(activeNode, true, false);
-                            else continue; // but there was a fixed node on the position itself, skip
-                        node.gridPosition = tempNode.gridPosition;
-                        map.nodes = [node];
-                        Logger.LogInfo("Position set!");
-                        break;
+                    if (activeNode)
+                        if (activeNode.isMovable) Simpleton<SkillManager>.i.skillCharacterWidget.SetInventoryState(activeNode, true, false);
+                        else continue; // but there was a fixed node on the position itself, skip
+                    node.gridPosition = tempNode.gridPosition;
+                    map.nodes = [node];
+                    Logger.LogInfo("Position set!");
+                    break;
                 }
             }
         }

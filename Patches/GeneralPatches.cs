@@ -91,7 +91,12 @@ internal class GeneralPatches
             Plugin.Logger.LogInfo($"Upgrade Point Level Filler: {__instance.upgradePointLevelsFiller.Count}");
             if (__instance.upgradePointLevelsFiller.Count > 0)
             {
-                foreach (var node in __instance.nodes) if (node != null && !Data.hypernodes.Contains(node.name)) Object.DestroyImmediate(node.gameObject);
+                List<string> hypernodesFound = [];
+                foreach (var node in __instance.nodes) 
+                    if (node != null && (!Data.hypernodes.Contains(node.name) || !hypernodesFound.Contains(node.name))) {
+                    hypernodesFound.Add(node.name);
+                    Object.DestroyImmediate(node.gameObject);
+                }
                 foreach (var node in __instance.connections)
                     if (node != null && node.gameObject != null)
                         Object.DestroyImmediate(node.gameObject);
@@ -124,7 +129,7 @@ internal class GeneralPatches
 
         foreach (var kv in Client.Instance.SaveData.mail) {
             ___emailDatabase.Add(kv.Key, Client.Instance.BuildMailData(kv.Value));
-Plugin.Logger.LogDebug($"Adding mail {kv.Key}...");
+            Plugin.Logger.LogDebug($"Adding mail {kv.Key}...");
         }
     }
 
