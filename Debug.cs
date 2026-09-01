@@ -37,7 +37,8 @@ static internal class Debug
                     { "guid", node.GUID },
                     { "desc", node.GetDescription() },
                     { "autoBuyLevel", node.autoBuyLevel },
-                    { "isInventory", node.isInventory }
+                    { "isInventory", node.isInventory },
+                    { "gridPosition", node.gridPosition }
                 });
             }
             characters.Add(nodes);
@@ -87,14 +88,15 @@ static internal class Debug
         if (Directory.Exists(fullpath)) Directory.Delete(fullpath, true);
     }
 
-    static string SetTimeScale(int scale) => (Time.timeScale = scale).ToString();
+    static string TimeScale(string[] args) {
+        if (args.Length != 1) return Time.timeScale.ToString();
+        return (Time.timeScale = Convert.ToInt32(args[0])).ToString();
+    } 
 
     static internal void RegisterCommands()
     {
         var instance = ConsoleCommandsRepository.Instance;
         instance.RegisterCommand("dump_skill_data", _ => DumpSkillData(), "Dump skill data to file...");
-        instance.RegisterCommand("get_time_scale", _ => Time.timeScale.ToString(), "Get the game's time scale");
-        instance.RegisterCommand("set_time_scale_0", _ => SetTimeScale(0), "Set the game's time scale to 0");
-        instance.RegisterCommand("set_time_scale_1", _ => SetTimeScale(1), "Set the game's time scale to 1");
+        instance.RegisterCommand("time_scale", TimeScale, "Get/Set the game's time scale");
     }
 }
