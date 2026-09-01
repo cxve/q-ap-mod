@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TastyTools;
 using TMPro;
+using UnityEngine;
 
 namespace cxve.qap.Patches;
 
@@ -219,5 +220,33 @@ internal class CheckPatches
     {
         if (!ShouldSendRecyclingSetCheck(__instance, out string set)) return;
         Client.Instance.SendCheck(set + " Set");
+    }
+
+    static void UpdateComboMilestoneText(GameObject triggerCountGroup) {
+        int nextMilestone = Client.Instance.NextTriggerComboCheck();
+        if (nextMilestone < 0)
+            triggerCountGroup.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "Trigger";
+        else
+            triggerCountGroup.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text =
+            "Trigger<line-height=0>\n</size><voffset=-72><pos=-12><color=black><alpha=#AA><size=98>•</size><alpha=#FF>" +
+            Util.BuildAPIconSmall(5, -47) + "<color=white><voffset=-46><pos=26>at " + nextMilestone;
+    }
+
+    [HarmonyPatch(typeof(MatchSummaryWidget), nameof(MatchSummaryWidget.ShowTriggerCount))]
+    [HarmonyPostfix]
+    public static void UpdateComboCheckMilestone(GameObject ___triggerCountGroup)
+    {
+        UpdateComboMilestoneText(___triggerCountGroup);
+    }
+
+    [HarmonyPatch(typeof(MatchSummaryWidget), nameof(MatchSummaryWidget.UpdateTriggerCount))]
+    [HarmonyPostfix]
+    public static void SendComboCheck(int count, GameObject ___triggerCountGroup)
+    {
+        int milestone = Client.Instance.NextTriggerComboCheck();
+        if (milestone < 1 || count < milestone) return;
+        Client.Instance.SendCheck($"{milestone} nodes triggered in one flip");
+        UpdateComboMilestoneText(___triggerCountGroup);
+        AudioManager.SafePlayOneShot("crystal");
     }
 }

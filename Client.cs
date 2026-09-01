@@ -47,6 +47,7 @@ internal class Client
     internal struct ImplicitSlotData
     {
         internal int[] sanityNumChallenges;
+        internal int sanityNumTriggerCombo;
     }
     internal SlotData slotData;
     internal ImplicitSlotData slotDataImplicit;
@@ -360,6 +361,7 @@ internal class Client
         slotDataImplicit = new()
         {
             sanityNumChallenges = numChallenges,
+            sanityNumTriggerCombo = session.Locations.AllLocations.Count(x => x >= 1_001_000 && x < 1_001_300)
         };
 
         // resume base game logic
@@ -461,6 +463,13 @@ internal class Client
     internal bool IsRecyclingSetAvailable(string set) {
         var id = Array.IndexOf(Data.recycling_sets, set);
         return !SaveData.locations.Contains(1_000_400 + id);
+    }
+
+    internal int NextTriggerComboCheck()
+    {
+        int count = SaveData.locations.Count(x => x >= 1_001_000 && x < 1_001_300);
+        if (count >= slotDataImplicit.sanityNumTriggerCombo) return -1;
+        return (count + 1) * 10;
     }
 
     // put upcoming checks into a queue. this was made to improve scouting reliability by only sending one scout request instead of 5+
