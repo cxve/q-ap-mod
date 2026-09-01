@@ -122,8 +122,10 @@ internal class GeneralPatches
         foreach (var k in ___emailDatabase.Keys.Where(k => k.StartsWith("Q-AP_")))
             ___emailDatabase.Remove(k);
 
-        foreach (var kv in Client.Instance.SaveData.mail)
+        foreach (var kv in Client.Instance.SaveData.mail) {
             ___emailDatabase.Add(kv.Key, Client.Instance.BuildMailData(kv.Value));
+Plugin.Logger.LogDebug($"Adding mail {kv.Key}...");
+        }
     }
 
     [HarmonyPatch(typeof(ConsoleManager), "OnGUI")]
