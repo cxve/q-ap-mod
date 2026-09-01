@@ -40,12 +40,16 @@ internal class Client
         internal int itemPoolEfficiencyUpgradePoints;
         internal int itemPoolEfficiencyCrystals;
         internal int itemPoolEfficiencyCorruptionShards;
-        internal int sanityNumChallenges;
-        internal int sanityNumChallengesTier4;
         internal string version;
         internal byte[] fixedSkillPos;
     }
+
+    internal struct ImplicitSlotData
+    {
+        internal int[] sanityNumChallenges;
+    }
     internal SlotData slotData;
+    internal ImplicitSlotData slotDataImplicit;
     float lastSFX = 0;
 
     ArchipelagoSession session;
@@ -141,8 +145,6 @@ internal class Client
                 itemPoolEfficiencyCrystals = Convert.ToInt32(slotData["itemPoolEfficiencyCrystals"]),
                 itemPoolEfficiencyCorruptionShards = Convert.ToInt32(slotData["itemPoolEfficiencyCorruptionShards"]),
 
-                sanityNumChallenges = Convert.ToInt32(slotData["sanityNumChallenges"]),
-                sanityNumChallengesTier4 = Convert.ToInt32(slotData["sanityNumChallengesTier4"]),
                 version = versionWorld,
                 fixedSkillPos = [.. slotData["fixedSkillPos"].ToString().Split(",").Select(i => Convert.ToByte(i))]
             };
@@ -341,13 +343,21 @@ internal class Client
             Simpleton<DataManager>.i.ranksSO.ranks[i] = r;
         }
 
+        inventory.isReadyToReceiveItems = true;
+        // imply slot data from locations
+        int[] numChallenges = [0, 0, 0, 0];
+        for (int tier = 0; tier < 4; ++tier) numChallenges[tier] = session.Locations.AllLocations.Count(x => x >= 1_000_300 + tier * 10 && x < 1_000_300 + (tier + 1) * 10);
+        slotDataImplicit = new()
+        {
+            sanityNumChallenges = numChallenges,
+        };
+
         // resume base game logic
         Simpleton<AudioManager>.i.CrossfadeToMenu(0.5f);
         Simpleton<ScreenManager>.i.GoToLobby();
         //Simpleton<NavManager>.i.navButtons[2].requiresLevel2 = false;
         Simpleton<NavManager>.i.RefreshButtonVisibility();
 
-        inventory.isReadyToReceiveItems = true;
         Logger.LogInfo("Finished preparing run, have fun!");
     }
 
@@ -436,18 +446,7 @@ internal class Client
 
     // this generates the number of challenge checks expected on this slot and compares them to the number of completed checks for a specific tier
     // the result of the generation could be cached, but this is probably not devastating in terms of performance
-    internal bool IsChallengeAvailable(int tier)
-    {
-        int[] challenges = { 0, 0, 0, 0 };
-        for (int i = 0; i < slotData.sanityNumChallenges; ++i)
-        {
-            if (challenges[3] < slotData.sanityNumChallengesTier4 && challenges[2] > challenges[3] + 1) ++challenges[3];
-            else if (challenges[1] > challenges[2] + 1) ++challenges[2];
-            else if (challenges[0] > challenges[1] + 1) ++challenges[1];
-            else ++challenges[0];
-        }
-        return CountChallengeChecks(tier) < challenges[tier - 1];
-    }
+    internal bool IsChallengeAvailable(int tier) => CountChallengeChecks(tier) < slotDataImplicit.sanityNumChallenges[tier - 1];
 
     internal bool IsRecyclingSetAvailable(string set) {
         var id = Array.IndexOf(Data.recycling_sets, set);
