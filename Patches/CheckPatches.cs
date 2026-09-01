@@ -188,10 +188,7 @@ internal class CheckPatches
     public static void SetRewardToOne(ref (float bonus, string text, bool isTargetBonus, int totalSellValue) __result)
     {
         if (__result.isTargetBonus && Client.Instance.IsRecyclingSetAvailable(__result.text))
-        {
-            __result.bonus = 0;
-            __result.totalSellValue = 1;
-        }
+            __result = (0, __result.text, true, 1);
     }
 
     static bool ShouldSendRecyclingSetCheck(EquipScreenManager instance, out string set)
