@@ -256,10 +256,7 @@ internal class Client
         connected_slot.file = Simpleton<PlayerManager>.i.progressData.filename;
         var save = Save;
         save.slots.Add(connected_slot);
-        save.data[connected_slot.file] = new()
-        {
-            inventory = []
-        };
+        save.data[connected_slot.file] = new();
         Save = save;
 
         PrepareRun();
@@ -336,7 +333,7 @@ internal class Client
         }
 
         // set crystal rewards to zero
-        rankBackup = new(Simpleton<DataManager>.i.ranksSO.ranks);
+        rankBackup = [.. Simpleton<DataManager>.i.ranksSO.ranks];
         for (int i = 0; i < Simpleton<DataManager>.i.ranksSO.ranks.Count; ++i)
         {
             var r = Simpleton<DataManager>.i.ranksSO.ranks[i];
@@ -460,7 +457,8 @@ internal class Client
     // the result of the generation could be cached, but this is probably not devastating in terms of performance
     internal bool IsChallengeAvailable(int tier) => CountChallengeChecks(tier) < slotDataImplicit.sanityNumChallenges[tier - 1];
 
-    internal bool IsRecyclingSetAvailable(string set) {
+    internal bool IsRecyclingSetAvailable(string set)
+    {
         var id = Array.IndexOf(Data.recycling_sets, set);
         return !SaveData.locations.Contains(1_000_400 + id);
     }
@@ -517,9 +515,11 @@ internal class Client
     {
         Logger.LogInfo($"Send check \"{check}\"");
         long id = session.Locations.GetLocationIdFromName("Q-UP", check);
-        if (id <= 0) Logger.LogFatal($"Unable to send check \"{check}\", check not found!");
-        else
+        if (id <= 0)
         {
+            Logger.LogFatal($"Unable to send check \"{check}\", check not found!");
+            return;
+        }
             var data = SaveData;
             if (!data.locations.Contains(id))
             {
@@ -527,7 +527,6 @@ internal class Client
                 SaveData = data;
             }
             session.Locations.CompleteLocationChecks(id);
-        }
     }
 
     internal void SendGoal()
