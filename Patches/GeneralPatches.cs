@@ -92,10 +92,19 @@ internal class GeneralPatches
             if (__instance.upgradePointLevelsFiller.Count > 0)
             {
                 List<string> hypernodesFound = [];
-                foreach (var node in __instance.nodes) 
-                    if (node != null && (!Data.hypernodes.Contains(node.name) || !hypernodesFound.Contains(node.name))) {
-                    hypernodesFound.Add(node.name);
-                    Object.DestroyImmediate(node.gameObject);
+                foreach (var node in __instance.nodes)
+                {
+                    // if node exist AND EITHER is NOT a hypernode OR was found before...
+                    if (node != null && (!Data.hypernodes.Contains(node.name) || hypernodesFound.Contains(node.name)))
+                    {
+                        Plugin.Logger.LogDebug($"Destroying {node.name}");
+                        Object.DestroyImmediate(node.gameObject);
+                    }
+                    if (node != null)
+                    {
+                        Plugin.Logger.LogDebug($"Saving {node.name}");
+                        hypernodesFound.Add(node.name);
+                    }
                 }
                 foreach (var node in __instance.connections)
                     if (node != null && node.gameObject != null)
@@ -113,6 +122,26 @@ internal class GeneralPatches
     [HarmonyPostfix]
     public static void ResetChamp(SkillMap __instance)
     {
+        List<string> hypernodesFound = [];
+        foreach (var node in __instance.nodes.Where(node => Data.hypernodes.Contains(node.name) && !node.isInventory)) hypernodesFound.Add(node.name);
+        foreach (var node in __instance.nodes.Where(node => Data.hypernodes.Contains(node.name) && node.isInventory))
+        {
+            // if node exist AND EITHER is NOT a hypernode OR was found before...
+            if (node != null && Data.hypernodes.Contains(node.name))
+            {
+                if (!hypernodesFound.Contains(node.name))
+                {
+                    Plugin.Logger.LogDebug($"Saving {node.name}");
+                    hypernodesFound.Add(node.name);
+                }
+                else if (node.isInventory)
+                {
+                    Plugin.Logger.LogDebug($"Destroying {node.name}");
+                    Object.DestroyImmediate(node.gameObject);
+                }
+            }
+        }
+        __instance.nodes = [.. __instance.nodes.Where(x => x != null)];
         __instance.character = (ChampionType)Client.Instance.slotData.champ;
     }
 
@@ -122,12 +151,14 @@ internal class GeneralPatches
 
     [HarmonyPatch(typeof(EmailParser), nameof(EmailParser.InitializeProgress))]
     [HarmonyPrefix]
-    public static void LoadMailFromAPSave(ref Dictionary<string, EmailData> ___emailDatabase) {
+    public static void LoadMailFromAPSave(ref Dictionary<string, EmailData> ___emailDatabase)
+    {
         // delete emails loaded from other AP save files
         foreach (var k in ___emailDatabase.Keys.Where(k => k.StartsWith("Q-AP_")))
             ___emailDatabase.Remove(k);
 
-        foreach (var kv in Client.Instance.SaveData.mail) {
+        foreach (var kv in Client.Instance.SaveData.mail)
+        {
             ___emailDatabase.Add(kv.Key, Client.Instance.BuildMailData(kv.Value));
             Plugin.Logger.LogDebug($"Adding mail {kv.Key}...");
         }
@@ -135,14 +166,16 @@ internal class GeneralPatches
 
     [HarmonyPatch(typeof(ConsoleManager), "OnGUI")]
     [HarmonyPrefix]
-    public static void ToggleConsoleWithF10() {
+    public static void ToggleConsoleWithF10()
+    {
         if (Event.current.keyCode == KeyCode.F10) Event.current.keyCode = KeyCode.BackQuote;
     }
 
     [HarmonyPatch(typeof(SkillNode), nameof(SkillNode.Refresh))]
     [HarmonyPostfix]
-    public static void ChangeLockedSkillText(SkillNode __instance) {
-        if (__instance.autoBuyLevel > 90) __instance.lockedText.text = 
+    public static void ChangeLockedSkillText(SkillNode __instance)
+    {
+        if (__instance.autoBuyLevel > 90) __instance.lockedText.text =
         "<color=#000A><voffset=-7><pos=-16><size=72>•</size></color><size=12>" + Util.BuildAPIcon(0, 14);
     }
 
@@ -153,16 +186,21 @@ internal class GeneralPatches
 
     [HarmonyPatch(typeof(SkillLoadoutManager), nameof(SkillLoadoutManager.LoadLoadout))]
     [HarmonyPostfix]
-    public static void SetSkillPositions() {
+    public static void SetSkillPositions()
+    {
         SaveManager.SerializableSkillLoadout map = Simpleton<PlayerManager>.i.progressData.skillLoadouts.FirstOrDefault((SaveManager.SerializableSkillLoadout l) => l.name == loadout);
         foreach (var node in Simpleton<SkillManager>.i.activeMap.nodes.Where(node => node.name == "")) Simpleton<SkillManager>.i.skillCharacterWidget.SetInventoryState(node, isInventory: true, isDragging: false);
-        foreach (var node in Simpleton<SkillManager>.i.activeMap.nodes.Where(node => node.name != "")) {
-            try {
-            node.gridPosition = map.map.nodes.First(_node => _node.guid == node.GUID).gridPosition;
-            node.transform.localPosition = node.gridPosition;
-            node.map.SnapNodeToGridPosition(node);
-            node.Refresh();
-            } catch {
+        foreach (var node in Simpleton<SkillManager>.i.activeMap.nodes.Where(node => node.name != ""))
+        {
+            try
+            {
+                node.gridPosition = map.map.nodes.First(_node => _node.guid == node.GUID).gridPosition;
+                node.transform.localPosition = node.gridPosition;
+                node.map.SnapNodeToGridPosition(node);
+                node.Refresh();
+            }
+            catch
+            {
                 if (node.name != "[Upgrade] " && node.name != "99_Epic") Plugin.Logger.LogWarning($"Could not find {node.name} in serialized map.");
             }
         }
@@ -170,7 +208,8 @@ internal class GeneralPatches
 
     [HarmonyPatch(typeof(SkillMap), nameof(SkillMap.InitializeFromLoadoutMap))]
     [HarmonyPrefix]
-    public static void RemoveUnknownSkillsFromMap(ref SaveManager.SerializableSkillMap serializedMap) {
+    public static void RemoveUnknownSkillsFromMap(ref SaveManager.SerializableSkillMap serializedMap)
+    {
         serializedMap.nodes = [.. serializedMap.nodes.Where(node => node.name != "")];
     }
 }
