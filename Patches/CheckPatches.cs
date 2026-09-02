@@ -190,7 +190,7 @@ internal class CheckPatches
         var items = (from node in instance.itemNodes where instance.buybackSlots.Contains(node.currentSlot) select node.item).ToList();
         var (_, text, isTargetBonus, _) = instance.GetBuybackInfo(items);
         set = text;
-        return isTargetBonus;
+        return isTargetBonus && Client.Instance.IsRecyclingSetAvailable(set);
     }
 
     [HarmonyPatch(typeof(EquipScreenManager), "RefreshSellValue")]
