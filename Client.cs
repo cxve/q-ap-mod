@@ -455,7 +455,7 @@ internal class Client
             if (saveAttempt > _saveAttempt) yield break;
             SaveManager.SaveProgressData();
         }
-        SimpleScreen<MailManager>.i.StartCoroutine(WaitThenSave());
+        Simpleton<PlayerManager>.i.StartCoroutine(WaitThenSave());
     }
 
     internal bool IsThisMe(string sender) => sender == connected_slot.slot;
