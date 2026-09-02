@@ -5,20 +5,20 @@ namespace cxve.qap;
 
 internal static class Util {
     internal static string BuildAPIcon(int x = 0, int y = 0) => 
-        $"<color=#a0c4ff><voffset={y-4}><pos={x-7}>•</color>" +
-        $"<color=#fdffb6><voffset={y+4}><pos={x-7}>•</color>" +
-        $"<color=#ffadad><voffset={y+8}><pos={x}>•</color>" + 
-        $"<color=#caffbf><voffset={y+4}><pos={x+7}>•</color>" +
-        $"<color=#bdb2ff><voffset={y-4}><pos={x+7}>•</color>" +
-        $"<color=#ffd6a5><voffset={y-8}><pos={x}>•</color>";
+        $"<color=#a0c4ff><voffset={y-4}><pos={x-7}>•</pos></voffset></color>" +
+        $"<color=#fdffb6><voffset={y+4}><pos={x-7}>•</pos></voffset></color>" +
+        $"<color=#ffadad><voffset={y+8}><pos={x}>•</pos></voffset></color>" + 
+        $"<color=#caffbf><voffset={y+4}><pos={x+7}>•</pos></voffset></color>" +
+        $"<color=#bdb2ff><voffset={y-4}><pos={x+7}>•</pos></voffset></color>" +
+        $"<color=#ffd6a5><voffset={y-8}><pos={x}>•</pos></voffset></color>";
 
     internal static string BuildAPIconSmall(int x = 0, int y = 0) => 
-        $"<color=#a0c4ff><voffset={y-3}><pos={x-6}>•</color>" +
-        $"<color=#fdffb6><voffset={y+3}><pos={x-6}>•</color>" +
-        $"<color=#ffadad><voffset={y+7}><pos={x}>•</color>" + 
-        $"<color=#caffbf><voffset={y+3}><pos={x+6}>•</color>" +
-        $"<color=#bdb2ff><voffset={y-3}><pos={x+6}>•</color>" +
-        $"<color=#ffd6a5><voffset={y-7}><pos={x}>•</color>";
+        $"<color=#a0c4ff><voffset={y-3}><pos={x-6}>•</pos></voffset></color>" +
+        $"<color=#fdffb6><voffset={y+3}><pos={x-6}>•</pos></voffset></color>" +
+        $"<color=#ffadad><voffset={y+7}><pos={x}>•</pos></voffset></color>" + 
+        $"<color=#caffbf><voffset={y+3}><pos={x+6}>•</pos></voffset></color>" +
+        $"<color=#bdb2ff><voffset={y-3}><pos={x+6}>•</pos></voffset></color>" +
+        $"<color=#ffd6a5><voffset={y-7}><pos={x}>•</pos></voffset></color>";
 }
 
 internal static class SkillNodeExtensions
