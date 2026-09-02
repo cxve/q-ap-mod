@@ -155,12 +155,22 @@ internal class GeneralPatches
     [HarmonyPostfix]
     public static void SetSkillPositions() {
         SaveManager.SerializableSkillLoadout map = Simpleton<PlayerManager>.i.progressData.skillLoadouts.FirstOrDefault((SaveManager.SerializableSkillLoadout l) => l.name == loadout);
-        foreach (var node in Simpleton<SkillManager>.i.activeMap.nodes) {
-            node.gridPosition = map.map.nodes.First(_node => _node.name == node.name).gridPosition;
+        foreach (var node in Simpleton<SkillManager>.i.activeMap.nodes.Where(node => node.name == "")) Simpleton<SkillManager>.i.skillCharacterWidget.SetInventoryState(node, isInventory: true, isDragging: false);
+        foreach (var node in Simpleton<SkillManager>.i.activeMap.nodes.Where(node => node.name != "")) {
+            try {
+            node.gridPosition = map.map.nodes.First(_node => _node.guid == node.GUID).gridPosition;
             node.transform.localPosition = node.gridPosition;
             node.map.SnapNodeToGridPosition(node);
             node.Refresh();
+            } catch {
+                if (node.name != "[Upgrade] " && node.name != "99_Epic") Plugin.Logger.LogWarning($"Could not find {node.name} in serialized map.");
+            }
         }
-        
+    }
+
+    [HarmonyPatch(typeof(SkillMap), nameof(SkillMap.InitializeFromLoadoutMap))]
+    [HarmonyPrefix]
+    public static void RemoveUnknownSkillsFromMap(ref SaveManager.SerializableSkillMap serializedMap) {
+        serializedMap.nodes = [.. serializedMap.nodes.Where(node => node.name != "")];
     }
 }
