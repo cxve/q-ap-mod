@@ -183,14 +183,6 @@ internal class CheckPatches
         SetTargetBonusText(___targetBonusText);
     }
 
-    [HarmonyPatch(typeof(EquipScreenManager), nameof(EquipScreenManager.GetBuybackInfo))]
-    [HarmonyPostfix]
-    public static void SetRewardToOne(ref (float bonus, string text, bool isTargetBonus, int totalSellValue) __result)
-    {
-        if (__result.isTargetBonus && Client.Instance.IsRecyclingSetAvailable(__result.text))
-            __result = (0, __result.text, true, 1);
-    }
-
     static bool ShouldSendRecyclingSetCheck(EquipScreenManager instance, out string set)
     {
         set = "";
@@ -207,7 +199,7 @@ internal class CheckPatches
     {
         if (!ShouldSendRecyclingSetCheck(__instance, out _)) return;
         __instance.loadBonusText.text = "SET BONUS: Archipelago Item";
-        __instance.totalSellValueText.text += "<color=white> + 1</color><size=12>" + Util.BuildAPIconSmall(192, 4);
+        __instance.totalSellValueText.text = $"{__instance.totalSellValueText.text.Split("  ")[0]}  <color=white>1</color><size=12>{Util.BuildAPIconSmall(135, 4)}</size><pos=150> <color=white>+</color> {__instance.totalSellValueText.text.Split("  ")[1]}";
         SetTargetBonusText(__instance.targetBonusText);
     }
 
