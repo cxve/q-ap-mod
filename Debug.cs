@@ -96,7 +96,10 @@ static internal class Debug
     static internal void RegisterCommands()
     {
         var instance = ConsoleCommandsRepository.Instance;
-        instance.RegisterCommand("dump_skill_data", _ => DumpSkillData(), "Dump skill data to file...");
         instance.RegisterCommand("time_scale", TimeScale, "Get/Set the game's time scale");
+        instance.RegisterCommand("dump_skill_data", _ => DumpSkillData(), "Dump skill data to file...");
+#if CXVE_QAP_DEBUG
+        instance.RegisterCommand("dump_feat_data", _ => { DumpShopFeatures(); return "feat dump complete."; }, "Dump feat data to file...");
+#endif
     }
 }
