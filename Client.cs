@@ -47,7 +47,8 @@ internal class Client
     internal struct ImplicitSlotData
     {
         internal int[] sanityNumChallenges;
-        internal int sanityNumTriggerCombo;
+        internal int sanityTriggerComboMax;
+        internal int sanityTriggerComboIncrement;
     }
     internal SlotData slotData;
     internal ImplicitSlotData slotDataImplicit;
@@ -358,7 +359,8 @@ internal class Client
         slotDataImplicit = new()
         {
             sanityNumChallenges = numChallenges,
-            sanityNumTriggerCombo = session.Locations.AllLocations.Count(x => x >= 1_001_000 && x < 1_001_300)
+            sanityTriggerComboMax = Convert.ToInt32(session.Locations.AllLocations.Where(x => x >= 1_001_000 && x < 1_001_300).Max() - 1_001_000 + 1),
+            sanityTriggerComboIncrement = Convert.ToInt32(session.Locations.AllLocations.Where(x => x >= 1_001_000 && x < 1_001_300).Min() - 1_001_000 + 1)
         };
 
         // resume base game logic
@@ -482,8 +484,8 @@ internal class Client
     internal int NextTriggerComboCheck()
     {
         int count = SaveData.locations.Count(x => x >= 1_001_000 && x < 1_001_300);
-        if (count >= slotDataImplicit.sanityNumTriggerCombo) return -1;
-        return (count + 1) * 10;
+        if (count * slotDataImplicit.sanityTriggerComboIncrement >= slotDataImplicit.sanityTriggerComboMax) return -1;
+        return Math.Min((count + 1) * slotDataImplicit.sanityTriggerComboIncrement, slotDataImplicit.sanityTriggerComboMax);
     }
 
     // put upcoming checks into a queue. this was made to improve scouting reliability by only sending one scout request instead of 5+
