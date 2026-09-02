@@ -349,7 +349,7 @@ internal class Client
 
         // get all locations already sent
         var saveData = SaveData;
-        saveData.locations.AddRange(session.Locations.AllLocationsChecked);
+        saveData.locations.AddRange(session.Locations.AllLocationsChecked.Except(saveData.locations));
         SaveData = saveData;
 
         // imply slot data from locations
