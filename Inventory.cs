@@ -126,6 +126,7 @@ internal class Inventory
         {
             node.gridPosition = Data.orderToPos[168];
             Client.Instance.SendMail(item.ToSerializable(), item.ItemDisplayName, $"Apparently that's a so-called hypernode, which can now be found in the item shop! I've heard it's useful in endgame.");
+            return;
         }
         var map = new SaveManager.SerializableSkillMap() { character = node.originalChar, nodes = [node] };
         // 
